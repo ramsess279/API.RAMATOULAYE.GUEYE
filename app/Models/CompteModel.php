@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Services\GenerateNumeroCompte;
 use App\Services\CalculSoldeService;
 
@@ -17,12 +18,22 @@ class CompteModel extends Model
     protected $fillable = [
         "numeroCompte",
         "type",
-        "statut"
+        "statut",
+        "client_id",
+        "devise"
     ];
 
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'compte_id');
+    }
+
+    /**
+     * Relation avec le client propriétaire du compte
+     */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, 'client_id');
     }
 
     /**

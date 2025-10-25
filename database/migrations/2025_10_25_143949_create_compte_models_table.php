@@ -18,9 +18,14 @@ return new class extends Migration
             $table->string('devise')->default('XOF');
             $table->enum("statut", ['actif', 'bloque', 'ferme'])->default('actif');
             $table->uuid('client_id')->nullable();
-            // La clé étrangère vers clients sera ajoutée plus tard si la table clients existe
-            // $table->foreign('client_id')->references('id')->on('clients')->cascadeOnDelete();
+            $table->foreign('client_id')->references('id')->on('clients')->cascadeOnDelete();
             $table->timestamps();
+
+            // Index pour les performances
+            $table->index('numeroCompte');
+            $table->index('type');
+            $table->index('statut');
+            $table->index('client_id');
         });
     }
 
