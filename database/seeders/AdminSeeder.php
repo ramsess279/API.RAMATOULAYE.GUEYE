@@ -16,14 +16,15 @@ class AdminSeeder extends Seeder
     {
         // Créer un super admin
         $superAdminUser = User::create([
-            'name' => 'Super Admin',
+            'nom' => 'Super',
+            'prenom' => 'Admin',
             'email' => 'superadmin@banque.sn',
             'password' => bcrypt('password123'),
             'role' => 'admin',
-            'statut' => 'actif',
             'telephone' => '+221 77 000 00 00',
-            'date_naissance' => '1980-01-01',
+            'dateNaissance' => '1980-01-01',
             'adresse' => 'Siège Social, Dakar',
+            'genre' => 'homme',
         ]);
 
         Admin::create([
@@ -58,14 +59,15 @@ class AdminSeeder extends Seeder
 
         foreach ($adminUsers as $adminData) {
             $user = User::create([
-                'name' => $adminData['name'],
+                'nom' => explode(' ', $adminData['name'])[0],
+                'prenom' => explode(' ', $adminData['name'])[1] ?? 'Admin',
                 'email' => $adminData['email'],
                 'password' => bcrypt('password123'),
                 'role' => 'admin',
-                'statut' => 'actif',
                 'telephone' => '+221 77 ' . rand(100, 999) . ' ' . rand(10, 99) . ' ' . rand(10, 99),
-                'date_naissance' => now()->subYears(rand(25, 50))->format('Y-m-d'),
+                'dateNaissance' => now()->subYears(rand(25, 50))->format('Y-m-d'),
                 'adresse' => 'Agence Centrale, Dakar',
+                'genre' => 'homme',
             ]);
 
             Admin::create([

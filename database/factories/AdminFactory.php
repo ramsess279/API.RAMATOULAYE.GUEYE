@@ -16,7 +16,13 @@ class AdminFactory extends Factory
      */
     public function definition(): array
     {
+        // Créer d'abord l'utilisateur
+        $user = \App\Models\User::factory()->create([
+            'role' => 'admin',
+        ]);
+
         return [
+            'user_id' => $user->id,
             'numero_employe' => 'ADM' . $this->faker->unique()->numberBetween(1000, 9999),
             'niveau_acces' => $this->faker->randomElement(['admin', 'moderateur']),
             'permissions' => $this->faker->randomElements([

@@ -17,8 +17,7 @@ return new class extends Migration
             $table->enum("type", ['epargne', 'cheque']);
             $table->string('devise')->default('XOF');
             $table->enum("statut", ['actif', 'bloque', 'ferme'])->default('actif');
-            $table->uuid('client_id')->nullable();
-            $table->foreign('client_id')->references('id')->on('clients')->cascadeOnDelete();
+            $table->foreignUuid('client_id')->constrained('clients')->cascadeOnDelete();
             $table->timestamps();
 
             // Index pour les performances

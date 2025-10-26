@@ -13,16 +13,13 @@ class CompteModelSeeder extends Seeder
      */
     public function run(): void
     {
-        // Créer 10 comptes avec leurs transactions automatiquement via la factory
+        // Créer 10 comptes sans transactions pour éviter les problèmes UUID
         $comptes = CompteModel::factory()->count(10)->create();
 
-        // Afficher les soldes calculés pour vérification
-        $comptes = CompteModel::all();
-        $this->command->info('Comptes créés avec leurs transactions:');
+        // Afficher les comptes créés
+        $this->command->info('Comptes créés:');
         foreach ($comptes as $compte) {
-            $solde = $compte->getSolde();
-            $nombreTransactions = $compte->transactions()->count();
-            $this->command->info("Compte {$compte->numeroCompte}: {$nombreTransactions} transactions, Solde: {$solde} {$compte->devise}");
+            $this->command->info("Compte {$compte->numeroCompte}: {$compte->type} - {$compte->statut}");
         }
     }
 }

@@ -68,24 +68,24 @@ class ClientSeeder extends Seeder
 
         foreach ($clientUsers as $userData) {
             $user = User::create([
-                'name' => $userData['name'],
+                'nom' => $userData['client_data']['prenom'],
+                'prenom' => $userData['client_data']['nom'],
                 'email' => $userData['email'],
                 'password' => bcrypt('password123'),
                 'role' => 'client',
-                'statut' => 'actif',
-                'telephone' => $userData['telephone'],
-                'date_naissance' => $userData['date_naissance'],
-                'adresse' => $userData['adresse'],
-            ]);
-
-            Client::create(array_merge($userData['client_data'], [
-                'user_id' => $user->id,
-                'email' => $userData['email'],
                 'telephone' => $userData['telephone'],
                 'dateNaissance' => $userData['date_naissance'],
                 'adresse' => $userData['adresse'],
-                'statut' => 'actif',
-            ]));
+                'genre' => $userData['client_data']['genre'],
+            ]);
+
+            Client::create([
+                'user_id' => $user->id,
+                'cni' => $userData['client_data']['cni'],
+                'date_delivrance_cni' => $userData['client_data']['date_delivrance_cni'],
+                'date_expiration_cni' => $userData['client_data']['date_expiration_cni'],
+                'lieu_delivrance_cni' => $userData['client_data']['lieu_delivrance_cni'],
+            ]);
         }
 
         // Créer 10 clients supplémentaires avec factory

@@ -12,15 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('clients', function (Blueprint $table) {
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->string('cni')->unique();
             $table->timestamp('date_delivrance_cni')->nullable();
             $table->timestamp('date_expiration_cni')->nullable();
             $table->string('lieu_delivrance_cni')->nullable();
+            // Le statut existe déjà dans la table de base, pas besoin de le recréer
 
             // Index pour les performances
             $table->index('user_id');
             $table->index('cni');
+            // Index statut existe déjà dans la table de base
         });
     }
 

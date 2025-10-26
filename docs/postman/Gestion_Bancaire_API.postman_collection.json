@@ -1,0 +1,355 @@
+{
+  "info": {
+    "name": "Gestion Bancaire API - US 2.0",
+    "description": "Collection Postman pour tester l'API de gestion bancaire - US 2.0: Lister tous les comptes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Comptes",
+      "item": [
+        {
+          "name": "Lister tous les comptes - Par défaut",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"]
+            },
+            "description": "Récupère la liste paginée des comptes avec les paramètres par défaut (page=1, limit=10)"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister tous les comptes - Page 2",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?page=2&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "2"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Récupère la page 2 avec 5 éléments par page"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Filtre par type (Épargne)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?type=epargne",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "epargne"
+                }
+              ]
+            },
+            "description": "Filtre les comptes de type épargne uniquement"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Filtre par type (Chèque)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?type=cheque",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "cheque"
+                }
+              ]
+            },
+            "description": "Filtre les comptes de type chèque uniquement"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Filtre par statut (Actif)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?statut=actif",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "actif"
+                }
+              ]
+            },
+            "description": "Filtre les comptes avec statut actif"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Filtre par statut (Bloqué)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?statut=bloque",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "bloque"
+                }
+              ]
+            },
+            "description": "Filtre les comptes avec statut bloqué"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Recherche par numéro",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?search=C001",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "C001"
+                }
+              ]
+            },
+            "description": "Recherche les comptes dont le numéro contient 'C001'"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Recherche par titulaire",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?search=Diallo",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Diallo"
+                }
+              ]
+            },
+            "description": "Recherche les comptes dont le titulaire contient 'Diallo'"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Tri par date de création (DESC)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?sort=dateCreation&order=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "dateCreation"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Trie les comptes par date de création décroissante"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Tri par titulaire (ASC)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?sort=titulaire&order=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "titulaire"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                }
+              ]
+            },
+            "description": "Trie les comptes par titulaire croissant"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Combinaison de filtres",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?page=1&limit=10&type=epargne&statut=actif&sort=dateCreation&order=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "type",
+                  "value": "epargne"
+                },
+                {
+                  "key": "statut",
+                  "value": "actif"
+                },
+                {
+                  "key": "sort",
+                  "value": "dateCreation"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Combinaison de tous les filtres : comptes épargne actifs, triés par date décroissante"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister comptes - Paramètres invalides (Test erreur)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes?page=abc&limit=200&type=invalid",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "abc"
+                },
+                {
+                  "key": "limit",
+                  "value": "200"
+                },
+                {
+                  "key": "type",
+                  "value": "invalid"
+                }
+              ]
+            },
+            "description": "Test des erreurs de validation : page invalide, limite trop élevée, type invalide"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -21,47 +21,24 @@ class CompteModelFactory extends Factory
      */
     public function definition(): array
     {
+        // Récupérer un client existant aléatoirement
+        $client = \App\Models\Client::inRandomOrder()->first();
+
+        // Si aucun client n'existe, en créer un
+        if (!$client) {
+            $client = \App\Models\Client::factory()->create();
+        }
+
         return [
-            'id' => (string) Str::uuid(),
             "type" => fake()->randomElement(['cheque', 'epargne']),
             "statut" => fake()->randomElement(['actif', 'bloque', 'ferme']),
             "devise" => 'XOF',
+            'client_id' => $client->id,
         ];
     }
 
-    /**
-     * Configure the model factory.
-     */
-    public function configure(): static
-    {
-        return $this->afterCreating(function (CompteModel $compte) {
-            // Générer automatiquement des transactions fictives pour chaque compte créé
-            $nombreTransactions = rand(3, 8);
-
-            for ($i = 0; $i < $nombreTransactions; $i++) {
-                $type = fake()->randomElement(['depot', 'retrait', 'transfert']);
-                $montant = fake()->randomFloat(2, 100, 5000);
-
-                // Pour éviter un solde négatif au départ, favoriser les dépôts
-                if ($i < 2) {
-                    $type = 'depot';
-                    $montant = fake()->randomFloat(2, 500, 10000);
-                }
-
-                // Créer directement avec les données pour éviter les problèmes de factory
-                DB::table('transactions')->insert([
-                    'id' => (string) Str::uuid(),
-                    'compte_id' => (string) $compte->id,
-                    'montant' => $montant,
-                    'type' => $type,
-                    'description' => $this->genererDescriptionTransaction($type),
-                    'date_transaction' => fake()->dateTimeBetween('-6 months', 'now'),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-        });
-    }
+    // Temporarily disable transaction generation to fix seeding issues
+    // TODO: Re-enable after fixing UUID issues
 
     /**
      * Génère une description appropriée selon le type de transaction

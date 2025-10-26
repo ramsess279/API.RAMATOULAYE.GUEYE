@@ -11,18 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'client'])->default('client');
-            $table->enum('statut', ['actif', 'inactif', 'suspendu'])->default('actif');
-            $table->string('telephone')->nullable();
-            $table->date('date_naissance')->nullable();
-            $table->text('adresse')->nullable();
-
-            // Index pour les performances
-            $table->index('role');
-            $table->index('statut');
-            $table->index('telephone');
-        });
+        // Cette migration n'est plus nécessaire car les champs sont maintenant dans la migration principale des users
+        // On la garde vide pour éviter les erreurs de rollback
     }
 
     /**
@@ -30,11 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['role']);
-            $table->dropIndex(['statut']);
-            $table->dropIndex(['telephone']);
-            $table->dropColumn(['role', 'statut', 'telephone', 'date_naissance', 'adresse']);
-        });
+        // Rien à faire car les champs sont maintenant dans la migration principale
     }
 };

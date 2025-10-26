@@ -6,16 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 use App\Services\GenerateNumeroCompte;
 use App\Services\CalculSoldeService;
+use App\Traits\UuidTrait;
 
 class CompteModel extends Model
 {
-      use HasFactory ;
+       use HasFactory, UuidTrait;
 
     protected $table = "comptes";
 
     protected $fillable = [
+        "id",
         "numeroCompte",
         "type",
         "statut",
@@ -57,8 +60,16 @@ class CompteModel extends Model
         return $this->getSolde();
     }
 
-       protected static function booted()
+    /**
+     * Scope global pour récupérer uniquement les comptes non supprimés
+     * Les comptes sont considérés comme supprimés s'ils ont un statut 'ferme'
+     */
+    protected static function booted()
     {
+        static::addGlobalScope('nonSupprimes', function (Builder $builder) {
+            $builder->where('statut', '!=', 'ferme');
+        });
+
         static::creating(function ($compte) {
             if (empty($compte->numeroCompte)) {
                 $generator = new GenerateNumeroCompte();
@@ -68,6 +79,32 @@ class CompteModel extends Model
 
         // Supprimé l'événement created pour éviter les conflits avec les factories
         // Les transactions seront générées manuellement dans les seeders
+    }
+
+    /**
+     * Scope local pour récupérer un compte par son numéro
+     *
+     * @param Builder $query
+     * @param string $numero
+     * @return Builder
+     */
+    public function scopeNumero(Builder $query, string $numero): Builder
+    {
+        return $query->where('numeroCompte', $numero);
+    }
+
+    /**
+     * Scope local pour récupérer les comptes d'un client basé sur le téléphone
+     *
+     * @param Builder $query
+     * @param string $telephone
+     * @return Builder
+     */
+    public function scopeClient(Builder $query, string $telephone): Builder
+    {
+        return $query->whereHas('client.user', function (Builder $q) use ($telephone) {
+            $q->where('telephone', $telephone);
+        });
     }
 
 }

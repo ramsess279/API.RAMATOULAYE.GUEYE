@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('admins', function (Blueprint $table) {
             $table->uuid("id")->primary();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->string('numero_employe')->unique();
             $table->enum('niveau_acces', ['super_admin', 'admin', 'moderateur'])->default('admin');
             $table->json('permissions')->nullable(); // Permissions spécifiques

@@ -16,8 +16,7 @@ return new class extends Migration
             $table->decimal('montant', 15, 2);
             $table->enum("type", ['depot', 'retrait', 'transfert']);
             $table->text('description')->nullable();
-            $table->uuid('compte_id');
-            $table->foreign('compte_id')->references('id')->on('comptes')->cascadeOnDelete();
+            $table->foreignUuid('compte_id')->constrained('comptes')->cascadeOnDelete();
             $table->timestamp('date_transaction')->useCurrent();
             $table->timestamps();
 

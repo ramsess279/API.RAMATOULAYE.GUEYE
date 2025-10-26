@@ -13,20 +13,10 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->uuid("id")->primary();
-            $table->string('nom');
-            $table->string('prenom');
-            $table->string('email')->unique();
-            $table->string('telephone')->nullable();
-            $table->date('dateNaissance')->nullable();
-            $table->string('adresse')->nullable();
-            $table->enum('genre', ['homme', 'femme', 'autre'])->nullable();
-            $table->enum('statut', ['actif', 'inactif'])->default('actif');
             $table->timestamps();
 
             // Index pour les performances
-            $table->index('email');
-            $table->index('telephone');
-            $table->index('statut');
+            $table->index('created_at');
         });
     }
 

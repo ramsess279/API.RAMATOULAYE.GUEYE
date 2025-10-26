@@ -16,18 +16,16 @@ class ClientFactory extends Factory
      */
     public function definition(): array
     {
+        // Créer d'abord l'utilisateur
+        $user = \App\Models\User::factory()->create([
+            'role' => 'client',
+        ]);
+
         $dateDelivrance = $this->faker->dateTimeBetween('-5 years', '-1 year');
         $dateExpiration = $this->faker->dateTimeBetween($dateDelivrance, '+10 years');
 
         return [
-            'nom' => $this->faker->lastName(),
-            'prenom' => $this->faker->firstName(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'telephone' => $this->faker->phoneNumber(),
-            'dateNaissance' => $this->faker->dateTimeBetween('-70 years', '-18 years')->format('Y-m-d'),
-            'adresse' => $this->faker->address(),
-            'genre' => $this->faker->randomElement(['homme', 'femme', 'autre']),
-            'statut' => 'actif',
+            'user_id' => $user->id,
             'cni' => $this->faker->unique()->regexify('[0-9]{13}'),
             'date_delivrance_cni' => $dateDelivrance,
             'date_expiration_cni' => $dateExpiration,
