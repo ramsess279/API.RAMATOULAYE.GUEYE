@@ -236,11 +236,11 @@ class CompteController extends Controller
      *     operationId="getCompte",
      *     tags={"Comptes"},
      * @OA\Parameter(
-     *         name="numeroCompte",
+     *         name="compteId",
      *         in="path",
-     *         description="Numéro du compte bancaire",
+     *         description="ID du compte bancaire",
      *         required=true,
-     *         @OA\Schema(type="string", example="CPT1761572199795")
+     *         @OA\Schema(type="string", format="uuid", example="cc2577b1-bfce-4d0c-9250-50739c057bb0")
      *     ),
      *     @OA\Response(
      *         response=200,
