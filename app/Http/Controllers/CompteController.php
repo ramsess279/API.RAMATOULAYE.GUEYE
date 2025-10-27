@@ -49,7 +49,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/comptes",
+     *     path="/comptes",
      *     summary="Lister tous les comptes bancaires",
      *     description="Récupère la liste paginée de tous les comptes bancaires selon les permissions de l'utilisateur",
      *     operationId="getComptes",
@@ -219,7 +219,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/comptes/{compteId}",
+     *     path="/comptes/{compteId}",
      *     summary="Récupérer un compte spécifique",
      *     description="Récupère les détails d'un compte bancaire spécifique selon les permissions de l'utilisateur",
      *     operationId="getCompte",
@@ -229,7 +229,7 @@ class CompteController extends Controller
      *         in="path",
      *         description="ID du compte bancaire",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid")
+     *         @OA\Schema(type="string", format="uuid", example="cc2577b1-bfce-4d0c-9250-50739c057bb0")
      *     ),
      *     @OA\Response(
      *         response=200,

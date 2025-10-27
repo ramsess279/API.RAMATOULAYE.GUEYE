@@ -19,7 +19,7 @@
         }
     ],
     "paths": {
-        "/api/v1/comptes": {
+        "/comptes": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -293,7 +293,7 @@
                 ]
             }
         },
-        "/api/v1/comptes/{compteId}": {
+        "/comptes/{compteId}": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -309,7 +309,8 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "example": "cc2577b1-bfce-4d0c-9250-50739c057bb0"
                         }
                     }
                 ],
