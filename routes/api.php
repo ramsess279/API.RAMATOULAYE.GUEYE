@@ -66,5 +66,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['rating'])->group(function () {
         Route::get('/comptes', [CompteController::class, 'index'])
             ->name('comptes.index');
+        Route::get('/comptes/{compteId}', [CompteController::class, 'show'])
+            ->name('comptes.show');
     });
 });

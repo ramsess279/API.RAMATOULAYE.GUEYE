@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\CompteService;
 use App\Traits\ApiResponseTrait;
 use App\Exceptions\ValidationException;
+use App\Exceptions\CompteNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -211,6 +212,114 @@ class CompteController extends Controller
 
         } catch (ValidationException $e) {
             return $e->render($request);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Une erreur inattendue est survenue.', 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/comptes/{compteId}",
+     *     summary="Récupérer un compte spécifique",
+     *     description="Récupère les détails d'un compte bancaire spécifique selon les permissions de l'utilisateur",
+     *     operationId="getCompte",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(
+     *         name="compteId",
+     *         in="path",
+     *         description="ID du compte bancaire",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Détails du compte récupérés avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Données récupérées avec succès"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                 @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                 @OA\Property(property="titulaire", type="string", example="Amadou Diallo"),
+     *                 @OA\Property(property="type", type="string", enum={"epargne", "cheque"}),
+     *                 @OA\Property(property="solde", type="number", format="float", example=1250000),
+     *                 @OA\Property(property="devise", type="string", example="FCFA"),
+     *                 @OA\Property(property="dateCreation", type="string", format="date-time"),
+     *                 @OA\Property(property="statut", type="string", enum={"actif", "bloque", "ferme"}),
+     *                 @OA\Property(property="motifBlocage", type="string", nullable=true),
+     *                 @OA\Property(
+     *                     property="metadata",
+     *                     @OA\Property(property="derniereModification", type="string", format="date-time"),
+     *                     @OA\Property(property="version", type="integer", example=1)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     @OA\Property(property="compteId", type="string", example="550e8400-e29b-41d4-a716-446655440000")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Paramètres invalides",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Les données fournies sont invalides."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé - Token manquant ou invalide"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès refusé"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Données de validation invalides"
+     *     ),
+     *     @OA\Response(
+     *         response=429,
+     *         description="Trop de requêtes - Rate limiting"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur"
+     *     ),
+     *     security={{"bearerAuth":{}}}
+     * )
+     */
+    public function show(string $compteId): JsonResponse
+    {
+        try {
+            // TODO: Implémenter l'authentification et l'autorisation
+            // Pour l'instant, on récupère le compte sans restriction
+
+            // Récupération du compte par ID
+            $compte = $this->compteService->getCompteById($compteId);
+
+            // Transformation des données
+            $data = $this->compteService->transformCompteData($compte);
+
+            return $this->successResponse($data, 'Données récupérées avec succès');
+
+        } catch (CompteNotFoundException $e) {
+            return $e->render(request());
         } catch (\Exception $e) {
             return $this->errorResponse('Une erreur inattendue est survenue.', 500);
         }

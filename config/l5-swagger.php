@@ -10,6 +10,39 @@ return [
                 'version' => '1.0.0',
             ],
 
+            'info' => [
+                'title' => 'API Gestion Bancaire',
+                'description' => 'API REST pour la gestion des comptes bancaires',
+                'version' => '1.0.0',
+                'contact' => [
+                    'email' => 'contact@ramatoulaye.gueye.com'
+                ]
+            ],
+
+            'servers' => [
+                [
+                    'url' => 'http://api.ramatoulaye.gueye.com/api/v1',
+                    'description' => 'Serveur de production'
+                ],
+                [
+                    'url' => 'http://127.0.0.1:8000/api/v1',
+                    'description' => 'Serveur de développement local'
+                ]
+            ],
+
+            'securityDefinitions' => [
+                'securitySchemes' => [
+                    'bearerAuth' => [
+                        'type' => 'http',
+                        'scheme' => 'bearer',
+                        'bearerFormat' => 'JWT'
+                    ]
+                ],
+                'security' => [
+                    ['bearerAuth' => []]
+                ]
+            ],
+
             'routes' => [
                 /*
                  * Route for accessing api documentation interface
