@@ -63,9 +63,11 @@ Route::prefix('v1')->group(function () {
     });
 
     // Routes pour les comptes bancaires
-    Route::middleware(['rating'])->group(function () {
+    Route::middleware(['rating', 'logging'])->group(function () {
         Route::get('/comptes', [CompteController::class, 'index'])
             ->name('comptes.index');
+        Route::post('/comptes', [CompteController::class, 'store'])
+            ->name('comptes.store');
         Route::get('/comptes/{compteId}', [CompteController::class, 'show'])
             ->name('comptes.show');
     });

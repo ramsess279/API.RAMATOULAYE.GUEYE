@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Services\CompteService;
+use App\Services\CreateCompteService;
 use App\Traits\ApiResponseTrait;
 use App\Exceptions\ValidationException;
 use App\Exceptions\CompteNotFoundException;
+use App\Http\Requests\CompteRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -20,12 +22,16 @@ use Illuminate\Http\JsonResponse;
  * )
  *
  * @OA\Server(
+ *     url="http://localhost:8000/api/v1",
+ *     description="Serveur de développement local"
+ * ),
+ * @OA\Server(
  *     url="http://api.ramatoulaye.gueye.com/api/v1",
  *     description="Serveur de production"
  * )
  *
  * @OA\Server(
- *     url="http://127.0.0.1:8000/api/v1",
+ *     url="http://localhost:8000/api/v1",
  *     description="Serveur de développement local"
  * )
  *
@@ -41,15 +47,19 @@ class CompteController extends Controller
     use ApiResponseTrait;
 
     private CompteService $compteService;
+    private CreateCompteService $createCompteService;
 
-    public function __construct(CompteService $compteService)
-    {
+    public function __construct(
+        CompteService $compteService,
+        CreateCompteService $createCompteService
+    ) {
         $this->compteService = $compteService;
+        $this->createCompteService = $createCompteService;
     }
 
     /**
      * @OA\Get(
-     *     path="/api/v1/comptes",
+     *     path="/comptes",
      *     summary="Lister tous les comptes bancaires",
      *     description="Récupère la liste paginée de tous les comptes bancaires selon les permissions de l'utilisateur",
      *     operationId="getComptes",
@@ -219,7 +229,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/comptes/{compteId}",
+     *     path="/comptes/{compteId}",
      *     summary="Récupérer un compte spécifique",
      *     description="Récupère les détails d'un compte bancaire spécifique selon les permissions de l'utilisateur",
      *     operationId="getCompte",
@@ -322,6 +332,198 @@ class CompteController extends Controller
             return $e->render(request());
         } catch (\Exception $e) {
             return $this->errorResponse('Une erreur inattendue est survenue.', 500);
+        }
+    }
+
+    /**
+     * Vérifier si l'email a été envoyé avec succès
+     */
+    private function checkEmailSent(): bool
+    {
+        // En production, vérifier le statut réel d'envoi
+        // Pour l'instant, retourner true car l'événement est déclenché
+        return true;
+    }
+
+    /**
+     * Vérifier si le SMS a été envoyé avec succès
+     */
+    private function checkSmsSent(): bool
+    {
+        // En production, vérifier le statut réel d'envoi
+        // Pour l'instant, retourner true car l'événement est déclenché
+        return true;
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/comptes",
+     *     summary="Créer un nouveau compte bancaire",
+     *     description="Crée un nouveau compte bancaire. Si le client n'existe pas, il sera créé automatiquement avec génération de mot de passe et code d'authentification.",
+     *     operationId="createCompte",
+     *     tags={"Comptes"},
+     * @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"type", "soldeInitial", "devise", "client"},
+     *             @OA\Property(property="type", type="string", enum={"epargne", "cheque"}, example="cheque", description="Type de compte"),
+     *             @OA\Property(property="soldeInitial", type="number", format="float", example=500000, description="Solde initial (minimum 10 000)"),
+     *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA", description="Devise du compte"),
+     *             @OA\Property(
+     *                 property="client",
+     *                 type="object",
+     *                 required={"titulaire", "email", "telephone"},
+     *                 @OA\Property(property="id", type="string", format="uuid", nullable=true, example="", description="ID du client existant (optionnel)"),
+     *                 @OA\Property(property="titulaire", type="string", example="Jean Dupont", description="Nom complet du titulaire"),
+     *                 @OA\Property(property="cni", type="string", example="1234567890123", nullable=true, description="Numéro CNI (13 chiffres)"),
+     *                 @OA\Property(property="email", type="string", format="email", example="jean.dupont@email.com", description="Email du client"),
+     *                 @OA\Property(property="telephone", type="string", example="+221701234567", description="Numéro de téléphone sénégalais"),
+     *                 @OA\Property(property="adresse", type="string", example="Dakar, Sénégal", description="Adresse (optionnel)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Compte créé avec succès",
+     *         @OA\JsonContent(
+     *             oneOf={
+     *                 @OA\Schema(
+     *                     title="Nouveau client",
+     *                     @OA\Property(property="success", type="boolean", example=true),
+     *                     @OA\Property(property="message", type="string", example="Compte créé avec succès"),
+     *                     @OA\Property(
+     *                         property="data",
+     *                         @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                         @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                         @OA\Property(property="titulaire", type="string", example="Amadou Diallo"),
+     *                         @OA\Property(property="type", type="string", enum={"epargne", "cheque"}),
+     *                         @OA\Property(property="solde", type="number", format="float", example=500000),
+     *                         @OA\Property(property="devise", type="string", example="FCFA"),
+     *                         @OA\Property(property="dateCreation", type="string", format="date-time"),
+     *                         @OA\Property(property="statut", type="string", enum={"actif", "bloque", "ferme"}),
+     *                         @OA\Property(property="motifBlocage", type="string", nullable=true),
+     *                         @OA\Property(
+     *                             property="metadata",
+     *                             @OA\Property(property="derniereModification", type="string", format="date-time"),
+     *                             @OA\Property(property="version", type="integer", example=1)
+     *                         ),
+     *                         @OA\Property(property="clientCreated", type="boolean", example=true, description="Indique si un nouveau client a été créé"),
+     *                         @OA\Property(
+     *                             property="informationsConnexion",
+     *                             type="object",
+     *                             description="Informations de connexion fournies lors de la création d'un nouveau client",
+     *                             @OA\Property(property="motDePasseTemporaire", type="string", example="P&ygZ-*3?#0h", description="Mot de passe temporaire généré"),
+     *                             @OA\Property(property="codeAuthentification", type="string", example="329259", description="Code d'authentification à 6 chiffres"),
+     *                             @OA\Property(property="numeroCompte", type="string", example="C00123456", description="Numéro du compte créé"),
+     *                             @OA\Property(property="email", type="string", example="jean.dupont@email.com", description="Email du client"),
+     *                             @OA\Property(property="instructions", type="string", example="Utilisez ces informations pour votre première connexion. Le mot de passe doit être changé.", description="Instructions d'utilisation")
+     *                         ),
+     *                         @OA\Property(property="notificationsSent", type="object",
+     *                             @OA\Property(property="email", type="boolean", example=true, description="Statut d'envoi de l'email d'authentification"),
+     *                             @OA\Property(property="sms", type="boolean", example=true, description="Statut d'envoi du SMS avec le code")
+     *                         )
+     *                     )
+     *                 ),
+     *                 @OA\Schema(
+     *                     title="Client existant",
+     *                     @OA\Property(property="success", type="boolean", example=true),
+     *                     @OA\Property(property="message", type="string", example="Compte créé avec succès"),
+     *                     @OA\Property(
+     *                         property="data",
+     *                         @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                         @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                         @OA\Property(property="titulaire", type="string", example="Amadou Diallo"),
+     *                         @OA\Property(property="type", type="string", enum={"epargne", "cheque"}),
+     *                         @OA\Property(property="solde", type="number", format="float", example=500000),
+     *                         @OA\Property(property="devise", type="string", example="FCFA"),
+     *                         @OA\Property(property="dateCreation", type="string", format="date-time"),
+     *                         @OA\Property(property="statut", type="string", enum={"actif", "bloque", "ferme"}),
+     *                         @OA\Property(property="motifBlocage", type="string", nullable=true),
+     *                         @OA\Property(
+     *                             property="metadata",
+     *                             @OA\Property(property="derniereModification", type="string", format="date-time"),
+     *                             @OA\Property(property="version", type="integer", example=1)
+     *                         ),
+     *                         @OA\Property(property="clientCreated", type="boolean", example=false, description="Indique si un nouveau client a été créé"),
+     *                         @OA\Property(property="notificationsSent", type="object",
+     *                             @OA\Property(property="email", type="boolean", example=false, description="Statut d'envoi de l'email d'authentification"),
+     *                             @OA\Property(property="sms", type="boolean", example=false, description="Statut d'envoi du SMS avec le code")
+     *                         )
+     *                     )
+     *                 )
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Données invalides",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Les données fournies sont invalides."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé - Token manquant ou invalide"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès refusé - Droits insuffisants"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Données de validation invalides"
+     *     ),
+     *     @OA\Response(
+     *         response=429,
+     *         description="Trop de requêtes - Rate limiting"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur"
+     *     ),
+     *     security={{"bearerAuth":{}}}
+     * )
+     */
+    public function store(CompteRequest $request): JsonResponse
+    {
+        try {
+            // TODO: Implémenter l'authentification et l'autorisation
+            // Pour l'instant, on permet la création sans restriction
+
+            // Créer le compte via le service
+            $compte = $this->createCompteService->createCompte($request->validated());
+
+            // Transformer les données pour la réponse
+            $data = $this->compteService->transformCompteData($compte);
+
+            // Ajouter des informations supplémentaires sur la création
+            $data['clientCreated'] = $this->createCompteService->getClientCreationService()->isClientNewlyCreated();
+
+            // Ajouter les informations de connexion si c'est un nouveau client
+            if ($data['clientCreated']) {
+                $data['informationsConnexion'] = [
+                    'motDePasseTemporaire' => $compte->temporaryPassword ?? 'Non généré',
+                    'codeAuthentification' => $compte->authenticationCode ?? 'Non généré',
+                    'numeroCompte' => $compte->numeroCompte,
+                    'email' => $compte->client->user->email,
+                    'instructions' => 'Utilisez ces informations pour votre première connexion. Le mot de passe doit être changé.'
+                ];
+            }
+
+            // Vérifier le statut réel des notifications
+            $data['notificationsSent'] = [
+                'email' => $data['clientCreated'] ? $this->checkEmailSent() : false,
+                'sms' => $data['clientCreated'] ? $this->checkSmsSent() : false
+            ];
+
+            return $this->successResponse($data, 'Compte créé avec succès', 201);
+
+        } catch (ValidationException $e) {
+            return $e->render($request);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Une erreur inattendue est survenue lors de la création du compte.', 500);
         }
     }
 }

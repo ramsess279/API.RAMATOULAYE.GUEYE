@@ -31,4 +31,16 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'token' => env('TWILIO_TOKEN'),
+        'from' => env('TWILIO_FROM'),
+    ],
+
+    'africastalking' => [
+        'username' => env('AFRICASTALKING_USERNAME', 'sandbox'), // Utilise sandbox par défaut
+        'api_key' => env('AFRICASTALKING_API_KEY', 'fake_key_for_testing'), // Clé factice pour les tests
+        'from' => env('AFRICASTALKING_FROM', 'BANQUE'),
+    ],
+
 ];

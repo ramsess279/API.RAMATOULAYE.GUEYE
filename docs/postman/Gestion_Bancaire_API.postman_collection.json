@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Gestion Bancaire API - US 2.0",
-    "description": "Collection Postman pour tester l'API de gestion bancaire - US 2.0: Lister tous les comptes",
+    "name": "Gestion Bancaire API - US 2.2",
+    "description": "Collection Postman pour tester l'API de gestion bancaire - US 2.2: Créer un nouveau compte + Lister tous les comptes",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -12,6 +12,173 @@
     }
   ],
   "item": [
+    {
+      "name": "Créer un compte",
+      "item": [
+        {
+          "name": "Créer un nouveau compte - Client existant (Épargne)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Diallo\",\n  \"prenom\": \"Amadou\",\n  \"email\": \"amadou.diallo@email.com\",\n  \"telephone\": \"+221771234567\",\n  \"dateNaissance\": \"1990-05-15\",\n  \"adresse\": \"Dakar, Sénégal\",\n  \"genre\": \"M\",\n  \"cni\": \"1234567890124\",\n  \"date_delivrance_cni\": \"2020-01-15\",\n  \"date_expiration_cni\": \"2030-01-15\",\n  \"lieu_delivrance_cni\": \"Dakar\",\n  \"type\": \"epargne\",\n  \"devise\": \"FCFA\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"]
+            },
+            "description": "Crée un nouveau compte épargne pour un client. Si le client n'existe pas, il sera créé automatiquement avec génération de mot de passe et code d'authentification."
+          },
+          "response": []
+        },
+        {
+          "name": "Créer un nouveau compte - Client existant (Chèque)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Sarr\",\n  \"prenom\": \"Fatou\",\n  \"email\": \"fatou.sarr@email.com\",\n  \"telephone\": \"+221772345678\",\n  \"dateNaissance\": \"1985-03-20\",\n  \"adresse\": \"Thiès, Sénégal\",\n  \"genre\": \"F\",\n  \"cni\": \"9876543210988\",\n  \"date_delivrance_cni\": \"2019-06-10\",\n  \"date_expiration_cni\": \"2029-06-10\",\n  \"lieu_delivrance_cni\": \"Thiès\",\n  \"type\": \"cheque\",\n  \"devise\": \"FCFA\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"]
+            },
+            "description": "Crée un nouveau compte chèque pour un client. Si le client n'existe pas, il sera créé automatiquement."
+          },
+          "response": []
+        },
+        {
+          "name": "Créer un nouveau compte - Données minimales",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Ndiaye\",\n  \"prenom\": \"Moussa\",\n  \"email\": \"moussa.ndiaye@email.com\",\n  \"telephone\": \"+221773456789\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"]
+            },
+            "description": "Crée un nouveau compte avec les données minimales obligatoires. Le type par défaut est 'epargne' et la devise 'FCFA'."
+          },
+          "response": []
+        },
+        {
+          "name": "Créer un nouveau compte - Erreur validation (Email dupliqué)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Dupont\",\n  \"prenom\": \"Jean\",\n  \"email\": \"amadou.diallo@email.com\",\n  \"telephone\": \"+221774567890\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"]
+            },
+            "description": "Test d'erreur : tentative de création avec un email déjà utilisé."
+          },
+          "response": []
+        },
+        {
+          "name": "Créer un nouveau compte - Erreur validation (Téléphone dupliqué)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Martin\",\n  \"prenom\": \"Pierre\",\n  \"email\": \"pierre.martin@email.com\",\n  \"telephone\": \"+221771234567\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"]
+            },
+            "description": "Test d'erreur : tentative de création avec un numéro de téléphone déjà utilisé."
+          },
+          "response": []
+        },
+        {
+          "name": "Créer un nouveau compte - Erreur validation (Données manquantes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Test\",\n  \"email\": \"test@email.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes"]
+            },
+            "description": "Test d'erreur : données obligatoires manquantes (prénom et téléphone)."
+          },
+          "response": []
+        }
+      ]
+    },
     {
       "name": "Comptes",
       "item": [
@@ -313,6 +480,44 @@
               ]
             },
             "description": "Combinaison de tous les filtres : comptes épargne actifs, triés par date décroissante"
+          },
+          "response": []
+        },
+        {
+          "name": "Récupérer un compte spécifique",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes/550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes", "550e8400-e29b-41d4-a716-446655440000"]
+            },
+            "description": "Récupère les détails d'un compte spécifique par son ID UUID"
+          },
+          "response": []
+        },
+        {
+          "name": "Récupérer un compte - Erreur (ID inexistant)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/comptes/99999999-9999-9999-9999-999999999999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "comptes", "99999999-9999-9999-9999-999999999999"]
+            },
+            "description": "Test d'erreur : tentative de récupération d'un compte avec un ID inexistant"
           },
           "response": []
         },

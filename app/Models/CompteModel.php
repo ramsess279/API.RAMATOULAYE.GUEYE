@@ -26,6 +26,10 @@ class CompteModel extends Model
         "devise"
     ];
 
+    protected $appends = [
+        'solde'
+    ];
+
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'compte_id');

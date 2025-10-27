@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Cette collection Postman contient tous les tests nécessaires pour valider l'endpoint US 2.0 : "Lister tous les comptes".
+Cette collection Postman contient tous les tests nécessaires pour valider les endpoints US 2.2 : "Créer un nouveau compte" et US 2.0 : "Lister tous les comptes".
 
 ## Installation
 
@@ -20,38 +20,67 @@ Cette collection Postman contient tous les tests nécessaires pour valider l'end
 
 ## Structure de la collection
 
+### 📁 Créer un compte
+Contient tous les tests pour l'endpoint `POST /api/v1/comptes`
+
+#### Tests disponibles :
+
+1. **Créer un nouveau compte - Client existant (Épargne)**
+   - Création d'un compte épargne avec toutes les données client
+
+2. **Créer un nouveau compte - Client existant (Chèque)**
+   - Création d'un compte chèque avec toutes les données client
+
+3. **Créer un nouveau compte - Données minimales**
+   - Création avec uniquement les champs obligatoires
+
+4. **Créer un nouveau compte - Erreur validation (Email dupliqué)**
+   - Test d'erreur avec email déjà utilisé
+
+5. **Créer un nouveau compte - Erreur validation (Téléphone dupliqué)**
+   - Test d'erreur avec téléphone déjà utilisé
+
+6. **Créer un nouveau compte - Erreur validation (Données manquantes)**
+   - Test d'erreur avec champs obligatoires manquants
+
 ### 📁 Comptes
-Contient tous les tests pour l'endpoint `GET /api/v1/comptes`
+Contient tous les tests pour les endpoints `GET /api/v1/comptes`
 
 #### Tests disponibles :
 
 1. **Lister tous les comptes - Par défaut**
-   - Test basique avec paramètres par défaut
+    - Test basique avec paramètres par défaut
 
 2. **Lister tous les comptes - Page 2**
-   - Test de pagination (page 2, 5 éléments par page)
+    - Test de pagination (page 2, 5 éléments par page)
 
 3. **Lister comptes - Filtre par type**
-   - Test filtre par type `epargne`
-   - Test filtre par type `cheque`
+    - Test filtre par type `epargne`
+    - Test filtre par type `cheque`
 
 4. **Lister comptes - Filtre par statut**
-   - Test filtre par statut `actif`
-   - Test filtre par statut `bloque`
+    - Test filtre par statut `actif`
+    - Test filtre par statut `bloque`
 
 5. **Lister comptes - Recherche**
-   - Recherche par numéro de compte
-   - Recherche par nom du titulaire
+    - Recherche par numéro de compte
+    - Recherche par nom du titulaire
 
 6. **Lister comptes - Tri**
-   - Tri par date de création (DESC)
-   - Tri par titulaire (ASC)
+    - Tri par date de création (DESC)
+    - Tri par titulaire (ASC)
 
 7. **Lister comptes - Combinaison de filtres**
-   - Test avec tous les paramètres combinés
+    - Test avec tous les paramètres combinés
 
-8. **Lister comptes - Paramètres invalides**
-   - Test des erreurs de validation
+8. **Récupérer un compte spécifique**
+    - Test de récupération par ID UUID
+
+9. **Récupérer un compte - Erreur (ID inexistant)**
+    - Test d'erreur avec ID inexistant
+
+10. **Lister comptes - Paramètres invalides**
+    - Test des erreurs de validation
 
 ## Utilisation
 
@@ -68,8 +97,14 @@ Contient tous les tests pour l'endpoint `GET /api/v1/comptes`
 
 ### Headers requis
 
+#### Pour les requêtes GET :
 Tous les tests incluent automatiquement :
 - `Accept: application/json`
+
+#### Pour les requêtes POST :
+Tous les tests incluent automatiquement :
+- `Accept: application/json`
+- `Content-Type: application/json`
 
 ### Paramètres de requête
 
@@ -126,13 +161,42 @@ Chaque test démontre l'utilisation des différents paramètres :
 }
 ```
 
+### Réponse de succès - Création de compte
+```json
+{
+  "success": true,
+  "message": "Compte créé avec succès",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "numeroCompte": "C00123456",
+    "titulaire": "Amadou Diallo",
+    "type": "epargne",
+    "solde": 0,
+    "devise": "FCFA",
+    "dateCreation": "2023-03-15T00:00:00Z",
+    "statut": "actif",
+    "motifBlocage": null,
+    "metadata": {
+      "derniereModification": "2023-03-15T00:00:00Z",
+      "version": 1
+    }
+  },
+  "clientCreated": true,
+  "notificationsSent": {
+    "email": true,
+    "sms": true
+  }
+}
+```
+
 ### Réponse d'erreur de validation
 ```json
 {
   "success": false,
   "message": "Les données fournies sont invalides.",
   "errors": {
-    "page": ["Le numéro de page doit être un entier positif."]
+    "email": ["Cet email est déjà utilisé."],
+    "telephone": ["Ce numéro de téléphone est déjà utilisé."]
   }
 }
 ```
@@ -168,6 +232,14 @@ pm.test("Pagination structure is correct", function () {
 
 ## Notes importantes
 
+### Pour la création de compte :
+- Si le client n'existe pas, il est créé automatiquement avec génération de mot de passe et code d'authentification
+- Un email d'authentification est envoyé avec le mot de passe généré
+- Un SMS est envoyé avec le code d'authentification (valide 24h)
+- Le numéro de compte est généré automatiquement
+- Le solde initial est de 0 (calculé à partir des transactions futures)
+
+### Pour la consultation des comptes :
 - L'authentification n'est pas encore activée (TODO pour plus tard)
 - Tous les comptes retournés ont un statut ≠ 'ferme' (scope global)
 - Les soldes sont calculés dynamiquement à partir des transactions
