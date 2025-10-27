@@ -70,5 +70,8 @@ Route::prefix('v1')->group(function () {
             ->name('comptes.store');
         Route::get('/comptes/{compteId}', [CompteController::class, 'show'])
             ->name('comptes.show');
+        Route::patch('/comptes/{numeroCompte}', [CompteController::class, 'update'])
+            ->name('comptes.update');
     });
+
 });

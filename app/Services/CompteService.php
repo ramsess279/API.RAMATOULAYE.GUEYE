@@ -138,8 +138,8 @@ class CompteService
     public function transformCompteData(CompteModel $compte): array
     {
         return [
-            'id' => $compte->id,
             'numeroCompte' => $compte->numeroCompte,
+            'clientId' => $compte->client->id,
             'titulaire' => $compte->client->user->prenom . ' ' . $compte->client->user->nom,
             'type' => $compte->type,
             'solde' => $compte->getSolde(),
@@ -166,6 +166,7 @@ class CompteService
             return [
                 'id' => $compte->id,
                 'numeroCompte' => $compte->numeroCompte,
+                'clientId' => $compte->client->id,
                 'titulaire' => $compte->client->user->prenom . ' ' . $compte->client->user->nom,
                 'type' => $compte->type,
                 'solde' => $compte->getSolde(),
@@ -179,5 +180,61 @@ class CompteService
                 ]
             ];
         })->toArray();
+    }
+
+    /**
+     * Met à jour les informations d'un compte bancaire
+     *
+     * @param string $compteId
+     * @param array $data
+     * @return CompteModel
+     * @throws CompteNotFoundException
+     */
+    public function updateCompte(string $numeroCompte, array $data): CompteModel
+    {
+        // Récupérer le compte par numéro
+        $compte = CompteModel::with(['client.user'])->where('numeroCompte', $numeroCompte)->first();
+
+        if (!$compte) {
+            throw new CompteNotFoundException();
+        }
+
+        // Mettre à jour le titulaire si fourni
+        if (isset($data['titulaire'])) {
+            // Séparer prénom et nom
+            $noms = explode(' ', $data['titulaire'], 2);
+            $compte->client->user->prenom = $noms[0] ?? '';
+            $compte->client->user->nom = $noms[1] ?? '';
+            $compte->client->user->save();
+        }
+
+        // Mettre à jour les informations client si fournies
+        if (isset($data['informationsClient'])) {
+            $clientData = $data['informationsClient'];
+
+            if (isset($clientData['telephone'])) {
+                $compte->client->user->telephone = $clientData['telephone'];
+            }
+
+            if (isset($clientData['email'])) {
+                $compte->client->user->email = $clientData['email'];
+            }
+
+            if (isset($clientData['password'])) {
+                $compte->client->user->password = bcrypt($clientData['password']);
+            }
+
+            if (isset($clientData['cni'])) {
+                $compte->client->cni = $clientData['cni'];
+            }
+
+            $compte->client->user->save();
+            $compte->client->save();
+        }
+
+        // Sauvegarder le compte pour mettre à jour updated_at
+        $compte->touch();
+
+        return $compte;
     }
 }

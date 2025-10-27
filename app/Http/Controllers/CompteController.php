@@ -8,6 +8,7 @@ use App\Traits\ApiResponseTrait;
 use App\Exceptions\ValidationException;
 use App\Exceptions\CompteNotFoundException;
 use App\Http\Requests\CompteRequest;
+use App\Http\Requests\UpdateCompteRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -124,7 +125,7 @@ class CompteController extends Controller
      *                 type="array",
      *                 @OA\Items(
      *                     @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
-     *                     @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                     @OA\Property(property="numeroCompte", type="string", example="CPT1761572199795"),
      *                     @OA\Property(property="titulaire", type="string", example="Amadou Diallo"),
      *                     @OA\Property(property="type", type="string", enum={"epargne", "cheque"}),
      *                     @OA\Property(property="solde", type="number", format="float", example=1250000),
@@ -234,12 +235,12 @@ class CompteController extends Controller
      *     description="Récupère les détails d'un compte bancaire spécifique selon les permissions de l'utilisateur",
      *     operationId="getCompte",
      *     tags={"Comptes"},
-     *     @OA\Parameter(
-     *         name="compteId",
+     * @OA\Parameter(
+     *         name="numeroCompte",
      *         in="path",
-     *         description="ID du compte bancaire",
+     *         description="Numéro du compte bancaire",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid")
+     *         @OA\Schema(type="string", example="CPT1761572199795")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -250,7 +251,7 @@ class CompteController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
-     *                 @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                 @OA\Property(property="numeroCompte", type="string", example="CPT1761572199795"),
      *                 @OA\Property(property="titulaire", type="string", example="Amadou Diallo"),
      *                 @OA\Property(property="type", type="string", enum={"epargne", "cheque"}),
      *                 @OA\Property(property="solde", type="number", format="float", example=1250000),
@@ -394,7 +395,7 @@ class CompteController extends Controller
      *                     @OA\Property(
      *                         property="data",
      *                         @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
-     *                         @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                         @OA\Property(property="numeroCompte", type="string", example="CPT1761572199795"),
      *                         @OA\Property(property="titulaire", type="string", example="Amadou Diallo"),
      *                         @OA\Property(property="type", type="string", enum={"epargne", "cheque"}),
      *                         @OA\Property(property="solde", type="number", format="float", example=500000),
@@ -431,7 +432,7 @@ class CompteController extends Controller
      *                     @OA\Property(
      *                         property="data",
      *                         @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
-     *                         @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                         @OA\Property(property="numeroCompte", type="string", example="CPT1761572199795"),
      *                         @OA\Property(property="titulaire", type="string", example="Amadou Diallo"),
      *                         @OA\Property(property="type", type="string", enum={"epargne", "cheque"}),
      *                         @OA\Property(property="solde", type="number", format="float", example=500000),
@@ -526,4 +527,129 @@ class CompteController extends Controller
             return $this->errorResponse('Une erreur inattendue est survenue lors de la création du compte.', 500);
         }
     }
+
+    /**
+     * @OA\Patch(
+     *     path="/comptes/{numeroCompte}",
+     *     summary="Mettre à jour les informations d'un compte bancaire",
+     *     description="Met à jour les informations du client associé à un compte bancaire. Tous les champs sont optionnels mais au moins un champ de modification doit être fourni.",
+     *     operationId="updateCompte",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(
+     *         name="numeroCompte",
+     *         in="path",
+     *         description="Numéro du compte bancaire",
+     *         required=true,
+     *         @OA\Schema(type="string", example="CPT1761572199795")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="titulaire", type="string", example="Amadou Diallo Junior", description="Nouveau nom du titulaire"),
+     *             @OA\Property(
+     *                 property="informationsClient",
+     *                 type="object",
+     *                 @OA\Property(property="telephone", type="string", example="+221771234568", description="Nouveau numéro de téléphone"),
+     *                 @OA\Property(property="email", type="string", format="email", example="amadou.diallo@example.com", description="Nouvel email"),
+     *                 @OA\Property(property="password", type="string", example="nouveauMotDePasse123", description="Nouveau mot de passe"),
+     *                 @OA\Property(property="cni", type="string", example="1234567890123", description="Nouveau numéro CNI")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Informations du compte mises à jour avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte mis à jour avec succès"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                 @OA\Property(property="numeroCompte", type="string", example="CPT1761572199795"),
+     *                 @OA\Property(property="titulaire", type="string", example="Amadou Diallo Junior"),
+     *                 @OA\Property(property="type", type="string", enum={"epargne", "cheque"}),
+     *                 @OA\Property(property="solde", type="number", format="float", example=1250000),
+     *                 @OA\Property(property="devise", type="string", example="FCFA"),
+     *                 @OA\Property(property="dateCreation", type="string", format="date-time"),
+     *                 @OA\Property(property="statut", type="string", enum={"actif", "bloque", "ferme"}),
+     *                 @OA\Property(property="motifBlocage", type="string", nullable=true),
+     *                 @OA\Property(
+     *                     property="metadata",
+     *                     @OA\Property(property="derniereModification", type="string", format="date-time"),
+     *                     @OA\Property(property="version", type="integer", example=1)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Données invalides ou aucun champ de modification fourni",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Les données fournies sont invalides."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     @OA\Property(property="compteId", type="string", example="550e8400-e29b-41d4-a716-446655440000")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé - Token manquant ou invalide"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès refusé"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Données de validation invalides"
+     *     ),
+     *     @OA\Response(
+     *         response=429,
+     *         description="Trop de requêtes - Rate limiting"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur"
+     *     ),
+     *     security={{"bearerAuth":{}}}
+     * )
+     */
+    public function update(UpdateCompteRequest $request, string $numeroCompte): JsonResponse
+    {
+        try {
+            // TODO: Implémenter l'authentification et l'autorisation
+            // Pour l'instant, on permet la mise à jour sans restriction
+
+            // Mettre à jour le compte via le service
+            $compte = $this->compteService->updateCompte($numeroCompte, $request->validated());
+
+            // Transformer les données pour la réponse
+            $data = $this->compteService->transformCompteData($compte);
+
+            return $this->successResponse($data, 'Compte mis à jour avec succès');
+
+        } catch (CompteNotFoundException $e) {
+            return $e->render(request());
+        } catch (ValidationException $e) {
+            return $e->render($request);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Une erreur inattendue est survenue lors de la mise à jour du compte.', 500);
+        }
+    }
+
 }
