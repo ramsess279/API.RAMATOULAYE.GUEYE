@@ -10,16 +10,16 @@
     },
     "servers": [
         {
-            "url": "https://api-ramatoulaye-gueye-i671.onrender.com/api/v1",
-            "description": "Serveur de production (Render)"
-        },
-        {
-            "url": "http://127.0.0.1:8000/api/v1",
+            "url": "http://localhost:8000/api/v1",
             "description": "Serveur de développement local"
         },
         {
+            "url": "http://api.ramatoulaye.gueye.com/api/v1",
+            "description": "Serveur de production"
+        },
+        {
             "url": "http://localhost:8000/api/v1",
-            "description": "Serveur de développement alternatif"
+            "description": "Serveur de développement local"
         }
     ],
     "paths": {
@@ -681,14 +681,13 @@
                 "operationId": "getCompte",
                 "parameters": [
                     {
-                        "name": "compteId",
+                        "name": "numeroCompte",
                         "in": "path",
-                        "description": "ID du compte bancaire bloqué",
+                        "description": "Numéro du compte bancaire",
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid",
-                            "example": "b6500996-a594-495b-ab68-c3727094f52d"
+                            "example": "CPT1761572199795"
                         }
                     }
                 ],
@@ -857,30 +856,74 @@
                         "bearerAuth": []
                     }
                 ]
-            },
-            "delete": {
+            }
+        },
+        "/comptes/{numeroCompte}": {
+            "patch": {
                 "tags": [
                     "Comptes"
                 ],
-                "summary": "Supprimer un compte bancaire",
-                "description": "Supprime un compte bancaire avec un soft delete. Le compte passe au statut 'ferme' et n'est plus visible dans les listes normales.",
-                "operationId": "deleteCompte",
+                "summary": "Mettre à jour les informations d'un compte bancaire",
+                "description": "Met à jour les informations du client associé à un compte bancaire. Tous les champs sont optionnels mais au moins un champ de modification doit être fourni.",
+                "operationId": "updateCompte",
                 "parameters": [
                     {
-                        "name": "compteId",
+                        "name": "numeroCompte",
                         "in": "path",
-                        "description": "ID du compte bancaire (doit être un compte épargne actif)",
+                        "description": "Numéro du compte bancaire",
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid",
-                            "example": "b6500996-a594-495b-ab68-c3727094f52d"
+                            "example": "CPT1761572199795"
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "titulaire": {
+                                        "description": "Nouveau nom du titulaire",
+                                        "type": "string",
+                                        "example": "Amadou Diallo Junior"
+                                    },
+                                    "informationsClient": {
+                                        "properties": {
+                                            "telephone": {
+                                                "description": "Nouveau numéro de téléphone",
+                                                "type": "string",
+                                                "example": "+221771234568"
+                                            },
+                                            "email": {
+                                                "description": "Nouvel email",
+                                                "type": "string",
+                                                "format": "email",
+                                                "example": "amadou.diallo@example.com"
+                                            },
+                                            "password": {
+                                                "description": "Nouveau mot de passe",
+                                                "type": "string",
+                                                "example": "nouveauMotDePasse123"
+                                            },
+                                            "cni": {
+                                                "description": "Nouveau numéro CNI",
+                                                "type": "string",
+                                                "example": "1234567890123"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
-                        "description": "Compte supprimé avec succès",
+                        "description": "Informations du compte mises à jour avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -891,7 +934,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Compte supprimé avec succès"
+                                            "example": "Compte mis à jour avec succès"
                                         },
                                         "data": {
                                             "properties": {
@@ -903,647 +946,54 @@
                                                     "type": "string",
                                                     "example": "CPT1761572199795"
                                                 },
-                                                "statut": {
+                                                "titulaire": {
                                                     "type": "string",
-                                                    "example": "ferme"
+                                                    "example": "Amadou Diallo Junior"
                                                 },
-                                                "dateFermeture": {
+                                                "type": {
                                                     "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-10-19T11:15:00Z"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Compte non trouvé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "properties": {
-                                                "code": {
-                                                    "type": "string",
-                                                    "example": "COMPTE_NOT_FOUND"
+                                                    "enum": [
+                                                        "epargne",
+                                                        "cheque"
+                                                    ]
                                                 },
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "Le compte avec l'ID spécifié n'existe pas"
+                                                "solde": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1250000
                                                 },
-                                                "details": {
-                                                    "properties": {
-                                                        "compteId": {
-                                                            "type": "string",
-                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Non autorisé - Token manquant ou invalide"
-                    },
-                    "403": {
-                        "description": "Accès refusé"
-                    },
-                    "500": {
-                        "description": "Erreur interne du serveur"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/comptes/{compteId}/bloquer": {
-            "post": {
-                "tags": [
-                    "Comptes"
-                ],
-                "summary": "Bloquer un compte bancaire",
-                "description": "Bloque un compte bancaire avec une durée et un motif spécifiés. Le compte passe au statut 'bloque' et une date de déblocage automatique est calculée.",
-                "operationId": "bloquerCompte",
-                "parameters": [
-                    {
-                        "name": "compteId",
-                        "in": "path",
-                        "description": "ID du compte bancaire",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "cc2577b1-bfce-4d0c-9250-50739c057bb0"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "motif",
-                                    "duree",
-                                    "unite"
-                                ],
-                                "properties": {
-                                    "motif": {
-                                        "description": "Motif du blocage",
-                                        "type": "string",
-                                        "example": "Activité suspecte détectée"
-                                    },
-                                    "duree": {
-                                        "description": "Durée du blocage",
-                                        "type": "integer",
-                                        "example": 30
-                                    },
-                                    "unite": {
-                                        "description": "Unité de temps",
-                                        "type": "string",
-                                        "enum": [
-                                            "jours",
-                                            "mois"
-                                        ],
-                                        "example": "mois"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Compte bloqué avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Compte bloqué avec succès"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
+                                                "devise": {
                                                     "type": "string",
-                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                    "example": "FCFA"
+                                                },
+                                                "dateCreation": {
+                                                    "type": "string",
+                                                    "format": "date-time"
                                                 },
                                                 "statut": {
                                                     "type": "string",
-                                                    "example": "bloque"
+                                                    "enum": [
+                                                        "actif",
+                                                        "bloque",
+                                                        "ferme"
+                                                    ]
                                                 },
                                                 "motifBlocage": {
                                                     "type": "string",
-                                                    "example": "Activité suspecte détectée"
-                                                },
-                                                "dateBlocage": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-10-19T11:20:00Z"
-                                                },
-                                                "dateDeblocagePrevue": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-11-18T11:20:00Z"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Données invalides ou compte déjà bloqué",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Seul un compte épargne actif peut être bloqué."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Compte non trouvé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "properties": {
-                                                "code": {
-                                                    "type": "string",
-                                                    "example": "COMPTE_NOT_FOUND"
-                                                },
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "Le compte avec l'ID spécifié n'existe pas"
-                                                },
-                                                "details": {
-                                                    "properties": {
-                                                        "compteId": {
-                                                            "type": "string",
-                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Non autorisé - Token manquant ou invalide"
-                    },
-                    "403": {
-                        "description": "Accès refusé"
-                    },
-                    "500": {
-                        "description": "Erreur interne du serveur"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/comptes/{compteId}/debloquer": {
-            "post": {
-                "tags": [
-                    "Comptes"
-                ],
-                "summary": "Débloquer un compte bancaire",
-                "description": "Débloque un compte bancaire précédemment bloqué. Le compte repasse au statut 'actif'.",
-                "operationId": "debloquerCompte",
-                "parameters": [
-                    {
-                        "name": "compteId",
-                        "in": "path",
-                        "description": "ID du compte bancaire",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "cc2577b1-bfce-4d0c-9250-50739c057bb0"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "motif"
-                                ],
-                                "properties": {
-                                    "motif": {
-                                        "description": "Motif du déblocage",
-                                        "type": "string",
-                                        "example": "Vérification complétée"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Compte débloqué avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Compte débloqué avec succès"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                                                },
-                                                "statut": {
-                                                    "type": "string",
-                                                    "example": "actif"
-                                                },
-                                                "dateDeblocage": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-10-19T12:00:00Z"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Données invalides ou compte déjà actif",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Seul un compte bloqué peut être débloqué."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Compte non trouvé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "properties": {
-                                                "code": {
-                                                    "type": "string",
-                                                    "example": "COMPTE_NOT_FOUND"
-                                                },
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "Le compte avec l'ID spécifié n'existe pas"
-                                                },
-                                                "details": {
-                                                    "properties": {
-                                                        "compteId": {
-                                                            "type": "string",
-                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Non autorisé - Token manquant ou invalide"
-                    },
-                    "403": {
-                        "description": "Accès refusé"
-                    },
-                    "500": {
-                        "description": "Erreur interne du serveur"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/comptes/{compteId}/archiver": {
-            "post": {
-                "tags": [
-                    "Comptes"
-                ],
-                "summary": "Archiver un compte bancaire",
-                "description": "Archive manuellement un compte bancaire et toutes ses transactions. Le compte devient inaccessible aux opérations normales.",
-                "operationId": "archiverCompte",
-                "parameters": [
-                    {
-                        "name": "compteId",
-                        "in": "path",
-                        "description": "ID du compte bancaire à archiver",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "b6500996-a594-495b-ab68-c3727094f52d"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "motif"
-                                ],
-                                "properties": {
-                                    "motif": {
-                                        "description": "Motif de l'archivage",
-                                        "type": "string",
-                                        "example": "Archivage suite à inactivité prolongée"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Compte archivé avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Compte archivé avec succès"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                                                },
-                                                "numeroCompte": {
-                                                    "type": "string",
-                                                    "example": "CPT1761572199795"
-                                                },
-                                                "archive": {
-                                                    "type": "boolean",
-                                                    "example": true
-                                                },
-                                                "dateArchivage": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-10-28T01:30:00Z"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Données invalides ou compte déjà archivé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Ce compte est déjà archivé."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Compte non trouvé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "properties": {
-                                                "code": {
-                                                    "type": "string",
-                                                    "example": "COMPTE_NOT_FOUND"
-                                                },
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "Le compte avec l'ID spécifié n'existe pas"
-                                                },
-                                                "details": {
-                                                    "properties": {
-                                                        "compteId": {
-                                                            "type": "string",
-                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Non autorisé - Token manquant ou invalide"
-                    },
-                    "403": {
-                        "description": "Accès refusé"
-                    },
-                    "500": {
-                        "description": "Erreur interne du serveur"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/comptes/{compteId}/desarchiver": {
-            "post": {
-                "tags": [
-                    "Comptes"
-                ],
-                "summary": "Désarchiver un compte bancaire",
-                "description": "Désarchive manuellement un compte bancaire précédemment archivé. Le compte redevient accessible aux opérations normales.",
-                "operationId": "desarchiverCompte",
-                "parameters": [
-                    {
-                        "name": "compteId",
-                        "in": "path",
-                        "description": "ID du compte bancaire à désarchiver",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "b6500996-a594-495b-ab68-c3727094f52d"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "motif"
-                                ],
-                                "properties": {
-                                    "motif": {
-                                        "description": "Motif du désarchivage",
-                                        "type": "string",
-                                        "example": "Réactivation suite à demande client"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Compte désarchivé avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Compte désarchivé avec succès"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                                                },
-                                                "numeroCompte": {
-                                                    "type": "string",
-                                                    "example": "CPT1761572199795"
-                                                },
-                                                "archive": {
-                                                    "type": "boolean",
-                                                    "example": false
-                                                },
-                                                "dateArchivage": {
-                                                    "type": "string",
-                                                    "example": null,
                                                     "nullable": true
+                                                },
+                                                "metadata": {
+                                                    "properties": {
+                                                        "derniereModification": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        },
+                                                        "version": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
                                                 }
                                             },
                                             "type": "object"
@@ -1555,7 +1005,7 @@
                         }
                     },
                     "400": {
-                        "description": "Données invalides ou compte déjà actif",
+                        "description": "Données invalides ou aucun champ de modification fourni",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1566,7 +1016,10 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Ce compte n'est pas archivé."
+                                            "example": "Les données fournies sont invalides."
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -1617,6 +1070,12 @@
                     },
                     "403": {
                         "description": "Accès refusé"
+                    },
+                    "422": {
+                        "description": "Données de validation invalides"
+                    },
+                    "429": {
+                        "description": "Trop de requêtes - Rate limiting"
                     },
                     "500": {
                         "description": "Erreur interne du serveur"
