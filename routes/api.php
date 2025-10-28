@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\CompteController;
 
 /*
@@ -49,6 +50,47 @@ use App\Http\Controllers\CompteController;
 
 // Routes API version 1
 Route::prefix('v1')->group(function () {
+
+    // Route de test pour diagnostiquer les problèmes Render
+    Route::get('/test', function () {
+        try {
+            // Test de base de données
+            $dbStatus = 'OK';
+            try {
+                DB::connection()->getPdo();
+            } catch (\Exception $e) {
+                $dbStatus = 'ERROR: ' . $e->getMessage();
+            }
+
+            // Test des extensions PHP
+            $extensions = [
+                'pdo_pgsql' => extension_loaded('pdo_pgsql'),
+                'pgsql' => extension_loaded('pgsql'),
+                'mbstring' => extension_loaded('mbstring'),
+                'openssl' => extension_loaded('openssl'),
+            ];
+
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Test route fonctionne',
+                'timestamp' => now()->toISOString(),
+                'php_version' => PHP_VERSION,
+                'laravel_version' => app()->version(),
+                'database' => $dbStatus,
+                'extensions' => $extensions,
+                'environment' => app()->environment(),
+                'debug_mode' => config('app.debug'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => substr($e->getTraceAsString(), 0, 500)
+            ], 500);
+        }
+    });
 
     // Route pour l'authentification de l'utilisateur
     /**
