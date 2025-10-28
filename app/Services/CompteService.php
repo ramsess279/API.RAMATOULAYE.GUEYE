@@ -130,6 +130,24 @@ class CompteService
     }
 
     /**
+     * Récupère un compte spécifique par son ID (même bloqué ou supprimé)
+     *
+     * @param string $compteId
+     * @return CompteModel
+     * @throws CompteNotFoundException
+     */
+    public function getCompteByIdWithTrashed(string $compteId): CompteModel
+    {
+        $compte = CompteModel::with(['client.user'])->withoutGlobalScope('nonSupprimes')->find($compteId);
+
+        if (!$compte) {
+            throw new CompteNotFoundException($compteId);
+        }
+
+        return $compte;
+    }
+
+    /**
      * Transforme les données d'un compte unique pour la réponse API
      *
      * @param CompteModel $compte
@@ -248,7 +266,7 @@ class CompteService
     public function deleteCompte(string $compteId): CompteModel
     {
         // Récupérer le compte
-        $compte = $this->getCompteById($compteId);
+        $compte = $this->getCompteByIdWithTrashed($compteId);
 
         // Changer le statut à 'ferme' avant la suppression
         $compte->statut = 'ferme';
@@ -256,6 +274,75 @@ class CompteService
 
         // Soft delete
         $compte->delete();
+
+        return $compte;
+    }
+
+    /**
+     * Bloque un compte bancaire
+     *
+     * @param string $compteId
+     * @param array $data
+     * @return CompteModel
+     * @throws CompteNotFoundException
+     */
+    public function bloquerCompte(string $compteId, array $data): CompteModel
+    {
+        // Récupérer le compte
+        $compte = $this->getCompteByIdWithTrashed($compteId);
+
+        // Vérifier que le compte est actif
+        if ($compte->statut !== 'actif') {
+            throw new \Exception('Seul un compte actif peut être bloqué.');
+        }
+
+        // Calculer la date de déblocage prévue
+        $dateBlocage = now();
+        $duree = $data['duree'];
+        $unite = $data['unite'];
+
+        if ($unite === 'jours') {
+            $dateDeblocagePrevue = $dateBlocage->copy()->addDays($duree);
+        } elseif ($unite === 'mois') {
+            $dateDeblocagePrevue = $dateBlocage->copy()->addMonths($duree);
+        } else {
+            throw new \Exception('Unité de temps invalide.');
+        }
+
+        // Mettre à jour le compte
+        $compte->statut = 'bloque';
+        $compte->motifBlocage = $data['motif'];
+        $compte->dateBlocage = $dateBlocage;
+        $compte->dateDeblocagePrevue = $dateDeblocagePrevue;
+        $compte->save();
+
+        return $compte;
+    }
+
+    /**
+     * Débloque un compte bancaire
+     *
+     * @param string $compteId
+     * @param array $data
+     * @return CompteModel
+     * @throws CompteNotFoundException
+     */
+    public function debloquerCompte(string $compteId, array $data): CompteModel
+    {
+        // Récupérer le compte
+        $compte = $this->getCompteByIdWithTrashed($compteId);
+
+        // Vérifier que le compte est bloqué
+        if ($compte->statut !== 'bloque') {
+            throw new \Exception('Seul un compte bloqué peut être débloqué.');
+        }
+
+        // Mettre à jour le compte
+        $compte->statut = 'actif';
+        $compte->motifBlocage = null;
+        $compte->dateBlocage = null;
+        $compte->dateDeblocagePrevue = null;
+        $compte->save();
 
         return $compte;
     }

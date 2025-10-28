@@ -74,6 +74,10 @@ Route::prefix('v1')->group(function () {
             ->name('comptes.update');
         Route::delete('/comptes/{compteId}', [CompteController::class, 'destroy'])
             ->name('comptes.destroy');
+        Route::post('/comptes/{compteId}/bloquer', [CompteController::class, 'bloquer'])
+            ->name('comptes.bloquer');
+        Route::post('/comptes/{compteId}/debloquer', [CompteController::class, 'debloquer'])
+            ->name('comptes.debloquer');
     });
 
 });

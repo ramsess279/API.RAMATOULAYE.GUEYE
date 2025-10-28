@@ -24,10 +24,13 @@ class CompteModel extends Model
         "type",
         "statut",
         "client_id",
-        "devise"
+        "devise",
+        "dateBlocage",
+        "dateDeblocagePrevue",
+        "motifBlocage"
     ];
 
-    protected $dates = ['deleted_at'];
+    protected $dates = ['deleted_at', 'dateBlocage', 'dateDeblocagePrevue'];
 
     protected $appends = [
         'solde'
