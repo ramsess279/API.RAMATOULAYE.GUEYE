@@ -36,7 +36,7 @@ use App\Http\Controllers\CompteController;
  *     description="Serveur de production"
  * ),
  * @OA\Server(
- *     url="https://api-ramatoulaye-gueye-i671.onrender.com/api/v1",
+ *     url="https://api-ramatoulaye-gueye-0d8p.onrender.com/api/v1",
  *     description="Serveur de production alternatif"
  * )
  *
