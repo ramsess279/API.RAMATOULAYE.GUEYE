@@ -15,6 +15,7 @@ use App\Http\Requests\ArchiverCompteRequest;
 use App\Http\Requests\DesarchiverCompteRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Info(
@@ -333,6 +334,10 @@ class CompteController extends Controller
         } catch (CompteNotFoundException $e) {
             return $e->render(request());
         } catch (\Exception $e) {
+            Log::error('Erreur dans CompteController@index: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
             return $this->errorResponse('Une erreur inattendue est survenue.', 500);
         }
     }
