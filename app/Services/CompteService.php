@@ -123,25 +123,7 @@ class CompteService
         $compte = $query->find($compteId);
 
         if (!$compte) {
-            throw new CompteNotFoundException($compteId);
-        }
-
-        return $compte;
-    }
-
-    /**
-     * Récupère un compte spécifique par son ID (même bloqué ou supprimé)
-     *
-     * @param string $compteId
-     * @return CompteModel
-     * @throws CompteNotFoundException
-     */
-    public function getCompteByIdWithTrashed(string $compteId): CompteModel
-    {
-        $compte = CompteModel::with(['client.user'])->withoutGlobalScope('nonSupprimes')->find($compteId);
-
-        if (!$compte) {
-            throw new CompteNotFoundException($compteId);
+            throw new CompteNotFoundException();
         }
 
         return $compte;
@@ -214,7 +196,7 @@ class CompteService
         $compte = CompteModel::with(['client.user'])->where('numeroCompte', $numeroCompte)->first();
 
         if (!$compte) {
-            throw new CompteNotFoundException($numeroCompte);
+            throw new CompteNotFoundException();
         }
 
         // Mettre à jour le titulaire si fourni
@@ -252,162 +234,6 @@ class CompteService
 
         // Sauvegarder le compte pour mettre à jour updated_at
         $compte->touch();
-
-        return $compte;
-    }
-
-    /**
-     * Supprime un compte bancaire (soft delete)
-     *
-     * @param string $compteId
-     * @return CompteModel
-     * @throws CompteNotFoundException
-     */
-    public function deleteCompte(string $compteId): CompteModel
-    {
-        // Récupérer le compte
-        $compte = $this->getCompteByIdWithTrashed($compteId);
-
-        // Changer le statut à 'ferme' avant la suppression
-        $compte->statut = 'ferme';
-        $compte->save();
-
-        // Soft delete
-        $compte->delete();
-
-        return $compte;
-    }
-
-    /**
-     * Bloque un compte bancaire
-     *
-     * @param string $compteId
-     * @param array $data
-     * @return CompteModel
-     * @throws CompteNotFoundException
-     */
-    public function bloquerCompte(string $compteId, array $data): CompteModel
-    {
-        // Récupérer le compte
-        $compte = $this->getCompteByIdWithTrashed($compteId);
-
-        // Vérifier que le compte est actif
-        if ($compte->statut !== 'actif') {
-            throw new \Exception('Seul un compte actif peut être bloqué.');
-        }
-
-        // Vérifier que c'est un compte épargne
-        if ($compte->type !== 'epargne') {
-            throw new \Exception('Seul un compte épargne peut être bloqué.');
-        }
-
-        // Calculer la date de déblocage prévue
-        $dateBlocage = now();
-        $duree = $data['duree'];
-        $unite = $data['unite'];
-
-        if ($unite === 'jours') {
-            $dateDeblocagePrevue = $dateBlocage->copy()->addDays($duree);
-        } elseif ($unite === 'mois') {
-            $dateDeblocagePrevue = $dateBlocage->copy()->addMonths($duree);
-        } else {
-            throw new \Exception('Unité de temps invalide.');
-        }
-
-        // Mettre à jour le compte
-        $compte->statut = 'bloque';
-        $compte->motifBlocage = $data['motif'];
-        $compte->dateBlocage = $dateBlocage;
-        $compte->dateDeblocagePrevue = $dateDeblocagePrevue;
-        $compte->save();
-
-        return $compte;
-    }
-
-    /**
-     * Débloque un compte bancaire
-     *
-     * @param string $compteId
-     * @param array $data
-     * @return CompteModel
-     * @throws CompteNotFoundException
-     */
-    public function debloquerCompte(string $compteId, array $data): CompteModel
-    {
-        // Récupérer le compte
-        $compte = $this->getCompteByIdWithTrashed($compteId);
-
-        // Vérifier que le compte est bloqué
-        if ($compte->statut !== 'bloque') {
-            throw new \Exception('Seul un compte bloqué peut être débloqué.');
-        }
-
-        // Mettre à jour le compte
-        $compte->statut = 'actif';
-        $compte->motifBlocage = null;
-        $compte->dateBlocage = null;
-        $compte->dateDeblocagePrevue = null;
-        $compte->save();
-
-        return $compte;
-    }
-
-    /**
-     * Archive manuellement un compte bancaire
-     *
-     * @param string $compteId
-     * @param array $data
-     * @return CompteModel
-     * @throws CompteNotFoundException
-     */
-    public function archiverCompte(string $compteId, array $data): CompteModel
-    {
-        // Récupérer le compte
-        $compte = $this->getCompteByIdWithTrashed($compteId);
-
-        // Vérifier que le compte n'est pas déjà archivé
-        if ($compte->archive) {
-            throw new \Exception('Ce compte est déjà archivé.');
-        }
-
-        // Archiver le compte
-        $compte->archive = true;
-        $compte->dateArchivage = now();
-        $compte->save();
-
-        // Archiver toutes les transactions du compte
-        \App\Models\Transaction::where('compte_id', $compte->id)
-            ->update(['archive' => true, 'dateArchivage' => now()]);
-
-        return $compte;
-    }
-
-    /**
-     * Désarchive manuellement un compte bancaire
-     *
-     * @param string $compteId
-     * @param array $data
-     * @return CompteModel
-     * @throws CompteNotFoundException
-     */
-    public function desarchiverCompte(string $compteId, array $data): CompteModel
-    {
-        // Récupérer le compte
-        $compte = $this->getCompteByIdWithTrashed($compteId);
-
-        // Vérifier que le compte est archivé
-        if (!$compte->archive) {
-            throw new \Exception('Ce compte n\'est pas archivé.');
-        }
-
-        // Désarchiver le compte
-        $compte->archive = false;
-        $compte->dateArchivage = null;
-        $compte->save();
-
-        // Désarchiver toutes les transactions du compte
-        \App\Models\Transaction::where('compte_id', $compte->id)
-            ->update(['archive' => false, 'dateArchivage' => null]);
 
         return $compte;
     }
