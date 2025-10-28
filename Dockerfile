@@ -35,22 +35,22 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
     && chown -R laravel:laravel /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-# Créer un fichier .env minimal pour le build
+# Créer un fichier .env minimal pour le build (les variables DB seront fournies par Render)
 RUN echo "APP_NAME=Laravel" > .env && \
     echo "APP_ENV=production" >> .env && \
     echo "APP_KEY=base64:zmt7Svo9yVj1OioRRbs8rDKOP3+N8cleJfy8U42MPoo=" >> .env && \
-    echo "APP_DEBUG=true" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
     echo "APP_URL=https://api-ramatoulaye-gueye-0d8p.onrender.com" >> .env && \
     echo "" >> .env && \
     echo "LOG_CHANNEL=stack" >> .env && \
     echo "LOG_LEVEL=error" >> .env && \
     echo "" >> .env && \
     echo "DB_CONNECTION=pgsql" >> .env && \
-    echo "DB_HOST=\${DB_HOST}" >> .env && \
-    echo "DB_PORT=\${DB_PORT}" >> .env && \
-    echo "DB_DATABASE=\${DB_DATABASE}" >> .env && \
-    echo "DB_USERNAME=\${DB_USERNAME}" >> .env && \
-    echo "DB_PASSWORD=\${DB_PASSWORD}" >> .env && \
+    echo "DB_HOST=dpg-d3udh8bipnbc738sr3mg-a.oregon-postgres.render.com" >> .env && \
+    echo "DB_PORT=5432" >> .env && \
+    echo "DB_DATABASE=ges_banque" >> .env && \
+    echo "DB_USERNAME=user" >> .env && \
+    echo "DB_PASSWORD=SzQfYOyJSm5MlX9qspxZcnrWECXv9dY5" >> .env && \
     echo "" >> .env && \
     echo "CACHE_DRIVER=file" >> .env && \
     echo "SESSION_DRIVER=file" >> .env && \
