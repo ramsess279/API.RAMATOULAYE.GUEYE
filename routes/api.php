@@ -33,6 +33,10 @@ use App\Http\Controllers\CompteController;
  * @OA\Server(
  *     url="https://api-ramatoulaye-gueye-i671.onrender.com/api/v1",
  *     description="Serveur de production"
+ * ),
+ * @OA\Server(
+ *     url="https://api-ramatoulaye-gueye.onrender.com/api/v1",
+ *     description="Serveur de production alternatif"
  * )
  *
  * @OA\SecurityScheme(

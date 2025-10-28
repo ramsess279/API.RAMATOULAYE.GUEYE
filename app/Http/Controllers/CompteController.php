@@ -32,6 +32,10 @@ use Illuminate\Support\Facades\Log;
  *     description="Serveur de production (Render)"
  * ),
  * @OA\Server(
+ *     url="https://api-ramatoulaye-gueye.onrender.com/api/v1",
+ *     description="Serveur de production alternatif"
+ * ),
+ * @OA\Server(
  *     url="http://127.0.0.1:8000/api/v1",
  *     description="Serveur de développement local"
  * ),
@@ -334,9 +338,9 @@ class CompteController extends Controller
         } catch (CompteNotFoundException $e) {
             return $e->render(request());
         } catch (\Exception $e) {
-            Log::error('Erreur dans CompteController@index: ' . $e->getMessage(), [
+            Log::error('Erreur dans CompteController@show: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
+                'request' => request()->all()
             ]);
             return $this->errorResponse('Une erreur inattendue est survenue.', 500);
         }
