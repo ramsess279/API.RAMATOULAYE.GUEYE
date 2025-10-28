@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompteController;
-use App\Http\Controllers\ClientController;
 
 /*
 |--------------------------------------------------------------------------
@@ -87,10 +86,11 @@ Route::prefix('v1')->group(function () {
     });
 
     // Routes pour les clients
-    Route::middleware(['logging'])->group(function () {
-        Route::patch('/clients/{clientId}', [ClientController::class, 'update'])
-            ->name('clients.update');
-    });
+    // TODO: Créer le ClientController
+    // Route::middleware(['logging'])->group(function () {
+    //     Route::patch('/clients/{clientId}', [ClientController::class, 'update'])
+    //         ->name('clients.update');
+    // });
 
 
 });
