@@ -6,13 +6,13 @@ return [
         'default' => [
             'api' => [
                 'title' => 'API Gestion Bancaire',
-                'description' => 'API REST pour la gestion des comptes bancaires',
+                'description' => 'API REST pour la gestion des comptes bancaires et clients',
                 'version' => '1.0.0',
             ],
 
             'info' => [
                 'title' => 'API Gestion Bancaire',
-                'description' => 'API REST pour la gestion des comptes bancaires',
+                'description' => 'API REST pour la gestion des comptes bancaires et clients',
                 'version' => '1.0.0',
                 'contact' => [
                     'email' => 'contact@ramatoulaye.gueye.com'
@@ -21,12 +21,20 @@ return [
 
             'servers' => [
                 [
+                    'url' => 'https://api-ramatoulaye-gueye-i671.onrender.com/api/v1',
+                    'description' => 'Serveur de production (Render)'
+                ],
+                [
                     'url' => 'http://api.ramatoulaye.gueye.com/api/v1',
-                    'description' => 'Serveur de production'
+                    'description' => 'Serveur de production alternatif'
                 ],
                 [
                     'url' => 'http://127.0.0.1:8000/api/v1',
                     'description' => 'Serveur de développement local'
+                ],
+                [
+                    'url' => 'http://localhost:8000/api/v1',
+                    'description' => 'Serveur de développement alternatif'
                 ]
             ],
 
