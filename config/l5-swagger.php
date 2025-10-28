@@ -1,3 +1,4 @@
+
 <?php
 
 return [
@@ -23,10 +24,6 @@ return [
                 [
                     'url' => 'https://api-ramatoulaye-gueye-i671.onrender.com/api/v1',
                     'description' => 'Serveur de production (Render)'
-                ],
-                [
-                    'url' => 'http://api.ramatoulaye.gueye.com/api/v1',
-                    'description' => 'Serveur de production alternatif'
                 ],
                 [
                     'url' => 'http://127.0.0.1:8000/api/v1',

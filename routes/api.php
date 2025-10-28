@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompteController;
+use App\Http\Controllers\ClientController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,7 +64,8 @@ Route::prefix('v1')->group(function () {
     });
 
     // Routes pour les comptes bancaires
-    Route::middleware(['rating', 'logging'])->group(function () {
+    // TODO: Remettre ['rating', 'logging'] quand l'authentification sera implémentée
+    Route::middleware(['logging'])->group(function () {
         Route::get('/comptes', [CompteController::class, 'index'])
             ->name('comptes.index');
         Route::post('/comptes', [CompteController::class, 'store'])
@@ -83,5 +85,12 @@ Route::prefix('v1')->group(function () {
         Route::post('/comptes/{compteId}/desarchiver', [CompteController::class, 'desarchiver'])
             ->name('comptes.desarchiver');
     });
+
+    // Routes pour les clients
+    Route::middleware(['logging'])->group(function () {
+        Route::patch('/clients/{clientId}', [ClientController::class, 'update'])
+            ->name('clients.update');
+    });
+
 
 });
