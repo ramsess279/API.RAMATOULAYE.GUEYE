@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\CompteController;
 
 /*
@@ -26,13 +27,17 @@ use App\Http\Controllers\CompteController;
  * )
  *
  * @OA\Server(
- *     url="http://api.ramatoulaye.gueye.com/api/v1",
- *     description="Serveur de production"
+ *     url="http://127.0.0.1:8000/api/v1",
+ *     description="Serveur de développement local"
  * )
  *
  * @OA\Server(
- *     url="http://127.0.0.1:8000/api/v1",
- *     description="Serveur de développement local"
+ *     url="https://api-ramatoulaye-gueye-0d8p.onrender.com/api/v1",
+ *     description="Serveur de production"
+ * ),
+ * @OA\Server(
+ *     url="https://api-ramatoulaye-gueye-0d8p.onrender.com/api/v1",
+ *     description="Serveur de production alternatif"
  * )
  *
  * @OA\SecurityScheme(
@@ -45,6 +50,47 @@ use App\Http\Controllers\CompteController;
 
 // Routes API version 1
 Route::prefix('v1')->group(function () {
+
+    // Route de test pour diagnostiquer les problèmes Render
+    Route::get('/test', function () {
+        try {
+            // Test de base de données
+            $dbStatus = 'OK';
+            try {
+                DB::connection()->getPdo();
+            } catch (\Exception $e) {
+                $dbStatus = 'ERROR: ' . $e->getMessage();
+            }
+
+            // Test des extensions PHP
+            $extensions = [
+                'pdo_pgsql' => extension_loaded('pdo_pgsql'),
+                'pgsql' => extension_loaded('pgsql'),
+                'mbstring' => extension_loaded('mbstring'),
+                'openssl' => extension_loaded('openssl'),
+            ];
+
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Test route fonctionne',
+                'timestamp' => now()->toISOString(),
+                'php_version' => PHP_VERSION,
+                'laravel_version' => app()->version(),
+                'database' => $dbStatus,
+                'extensions' => $extensions,
+                'environment' => app()->environment(),
+                'debug_mode' => config('app.debug'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => substr($e->getTraceAsString(), 0, 500)
+            ], 500);
+        }
+    });
 
     // Route pour l'authentification de l'utilisateur
     /**
@@ -63,7 +109,8 @@ Route::prefix('v1')->group(function () {
     });
 
     // Routes pour les comptes bancaires
-    Route::middleware(['rating', 'logging'])->group(function () {
+    // TODO: Remettre ['rating', 'logging'] quand l'authentification sera implémentée
+    Route::middleware(['logging'])->group(function () {
         Route::get('/comptes', [CompteController::class, 'index'])
             ->name('comptes.index');
         Route::post('/comptes', [CompteController::class, 'store'])
@@ -72,6 +119,24 @@ Route::prefix('v1')->group(function () {
             ->name('comptes.show');
         Route::patch('/comptes/{numeroCompte}', [CompteController::class, 'update'])
             ->name('comptes.update');
+        Route::delete('/comptes/{compteId}', [CompteController::class, 'destroy'])
+            ->name('comptes.destroy');
+        Route::post('/comptes/{compteId}/bloquer', [CompteController::class, 'bloquer'])
+            ->name('comptes.bloquer');
+        Route::post('/comptes/{compteId}/debloquer', [CompteController::class, 'debloquer'])
+            ->name('comptes.debloquer');
+        Route::post('/comptes/{compteId}/archiver', [CompteController::class, 'archiver'])
+            ->name('comptes.archiver');
+        Route::post('/comptes/{compteId}/desarchiver', [CompteController::class, 'desarchiver'])
+            ->name('comptes.desarchiver');
     });
+
+    // Routes pour les clients
+    // TODO: Créer le ClientController
+    // Route::middleware(['logging'])->group(function () {
+    //     Route::patch('/clients/{clientId}', [ClientController::class, 'update'])
+    //         ->name('clients.update');
+    // });
+
 
 });
