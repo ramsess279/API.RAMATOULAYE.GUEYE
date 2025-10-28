@@ -27,10 +27,12 @@ class CompteModel extends Model
         "devise",
         "dateBlocage",
         "dateDeblocagePrevue",
-        "motifBlocage"
+        "motifBlocage",
+        "archive",
+        "dateArchivage"
     ];
 
-    protected $dates = ['deleted_at', 'dateBlocage', 'dateDeblocagePrevue'];
+    protected $dates = ['deleted_at', 'dateBlocage', 'dateDeblocagePrevue', 'dateArchivage'];
 
     protected $appends = [
         'solde'

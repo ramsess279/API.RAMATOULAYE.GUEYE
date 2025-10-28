@@ -351,4 +351,64 @@ class CompteService
 
         return $compte;
     }
+
+    /**
+     * Archive manuellement un compte bancaire
+     *
+     * @param string $compteId
+     * @param array $data
+     * @return CompteModel
+     * @throws CompteNotFoundException
+     */
+    public function archiverCompte(string $compteId, array $data): CompteModel
+    {
+        // Récupérer le compte
+        $compte = $this->getCompteByIdWithTrashed($compteId);
+
+        // Vérifier que le compte n'est pas déjà archivé
+        if ($compte->archive) {
+            throw new \Exception('Ce compte est déjà archivé.');
+        }
+
+        // Archiver le compte
+        $compte->archive = true;
+        $compte->dateArchivage = now();
+        $compte->save();
+
+        // Archiver toutes les transactions du compte
+        \App\Models\Transaction::where('compte_id', $compte->id)
+            ->update(['archive' => true, 'dateArchivage' => now()]);
+
+        return $compte;
+    }
+
+    /**
+     * Désarchive manuellement un compte bancaire
+     *
+     * @param string $compteId
+     * @param array $data
+     * @return CompteModel
+     * @throws CompteNotFoundException
+     */
+    public function desarchiverCompte(string $compteId, array $data): CompteModel
+    {
+        // Récupérer le compte
+        $compte = $this->getCompteByIdWithTrashed($compteId);
+
+        // Vérifier que le compte est archivé
+        if (!$compte->archive) {
+            throw new \Exception('Ce compte n\'est pas archivé.');
+        }
+
+        // Désarchiver le compte
+        $compte->archive = false;
+        $compte->dateArchivage = null;
+        $compte->save();
+
+        // Désarchiver toutes les transactions du compte
+        \App\Models\Transaction::where('compte_id', $compte->id)
+            ->update(['archive' => false, 'dateArchivage' => null]);
+
+        return $compte;
+    }
 }
