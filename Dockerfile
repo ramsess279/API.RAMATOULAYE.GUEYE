@@ -38,9 +38,9 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
 # Créer un fichier .env minimal pour le build
 RUN echo "APP_NAME=Laravel" > .env && \
     echo "APP_ENV=production" >> .env && \
-    echo "APP_KEY=" >> .env && \
-    echo "APP_DEBUG=false" >> .env && \
-    echo "APP_URL=http://localhost" >> .env && \
+    echo "APP_KEY=base64:zmt7Svo9yVj1OioRRbs8rDKOP3+N8cleJfy8U42MPoo=" >> .env && \
+    echo "APP_DEBUG=true" >> .env && \
+    echo "APP_URL=https://api-ramatoulaye-gueye-0d8p.onrender.com" >> .env && \
     echo "" >> .env && \
     echo "LOG_CHANNEL=stack" >> .env && \
     echo "LOG_LEVEL=error" >> .env && \
@@ -76,6 +76,10 @@ USER laravel
 
 # Exposer le port 8000
 EXPOSE 8000
+
+
+# Utiliser le script d'entrée pour attendre la DB et exécuter les migrations
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Commande par défaut
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
