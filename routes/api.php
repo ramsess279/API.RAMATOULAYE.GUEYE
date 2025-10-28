@@ -26,13 +26,13 @@ use App\Http\Controllers\CompteController;
  * )
  *
  * @OA\Server(
- *     url="http://api.ramatoulaye.gueye.com/api/v1",
- *     description="Serveur de production"
+ *     url="http://127.0.0.1:8000/api/v1",
+ *     description="Serveur de développement local"
  * )
  *
  * @OA\Server(
- *     url="http://127.0.0.1:8000/api/v1",
- *     description="Serveur de développement local"
+ *     url="https://api-ramatoulaye-gueye-i671.onrender.com/api/v1",
+ *     description="Serveur de production"
  * )
  *
  * @OA\SecurityScheme(
@@ -78,6 +78,10 @@ Route::prefix('v1')->group(function () {
             ->name('comptes.bloquer');
         Route::post('/comptes/{compteId}/debloquer', [CompteController::class, 'debloquer'])
             ->name('comptes.debloquer');
+        Route::post('/comptes/{compteId}/archiver', [CompteController::class, 'archiver'])
+            ->name('comptes.archiver');
+        Route::post('/comptes/{compteId}/desarchiver', [CompteController::class, 'desarchiver'])
+            ->name('comptes.desarchiver');
     });
 
 });
