@@ -296,6 +296,11 @@ class CompteService
             throw new \Exception('Seul un compte actif peut être bloqué.');
         }
 
+        // Vérifier que c'est un compte épargne
+        if ($compte->type !== 'epargne') {
+            throw new \Exception('Seul un compte épargne peut être bloqué.');
+        }
+
         // Calculer la date de déblocage prévue
         $dateBlocage = now();
         $duree = $data['duree'];

@@ -240,9 +240,9 @@ class CompteController extends Controller
      * @OA\Parameter(
      *         name="compteId",
      *         in="path",
-     *         description="ID du compte bancaire",
+     *         description="ID du compte bancaire bloqué",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid", example="cc2577b1-bfce-4d0c-9250-50739c057bb0")
+     *         @OA\Schema(type="string", format="uuid", example="b6500996-a594-495b-ab68-c3727094f52d")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -661,12 +661,12 @@ class CompteController extends Controller
      *     description="Supprime un compte bancaire avec un soft delete. Le compte passe au statut 'ferme' et n'est plus visible dans les listes normales.",
      *     operationId="deleteCompte",
      *     tags={"Comptes"},
-     *     @OA\Parameter(
+     * @OA\Parameter(
      *         name="compteId",
      *         in="path",
-     *         description="ID du compte bancaire",
+     *         description="ID du compte bancaire (doit être un compte épargne actif)",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid", example="cc2577b1-bfce-4d0c-9250-50739c057bb0")
+     *         @OA\Schema(type="string", format="uuid", example="b6500996-a594-495b-ab68-c3727094f52d")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -779,12 +779,12 @@ class CompteController extends Controller
      *             )
      *         )
      *     ),
-     *     @OA\Response(
+     * @OA\Response(
      *         response=400,
      *         description="Données invalides ou compte déjà bloqué",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Seul un compte actif peut être bloqué.")
+     *             @OA\Property(property="message", type="string", example="Seul un compte épargne actif peut être bloqué.")
      *         )
      *     ),
      *     @OA\Response(

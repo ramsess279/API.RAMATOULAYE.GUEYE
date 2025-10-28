@@ -683,12 +683,12 @@
                     {
                         "name": "compteId",
                         "in": "path",
-                        "description": "ID du compte bancaire",
+                        "description": "ID du compte bancaire bloqué",
                         "required": true,
                         "schema": {
                             "type": "string",
                             "format": "uuid",
-                            "example": "cc2577b1-bfce-4d0c-9250-50739c057bb0"
+                            "example": "b6500996-a594-495b-ab68-c3727094f52d"
                         }
                     }
                 ],
@@ -869,12 +869,12 @@
                     {
                         "name": "compteId",
                         "in": "path",
-                        "description": "ID du compte bancaire",
+                        "description": "ID du compte bancaire (doit être un compte épargne actif)",
                         "required": true,
                         "schema": {
                             "type": "string",
                             "format": "uuid",
-                            "example": "cc2577b1-bfce-4d0c-9250-50739c057bb0"
+                            "example": "b6500996-a594-495b-ab68-c3727094f52d"
                         }
                     }
                 ],
@@ -1323,7 +1323,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Seul un compte actif peut être bloqué."
+                                            "example": "Seul un compte épargne actif peut être bloqué."
                                         }
                                     },
                                     "type": "object"
