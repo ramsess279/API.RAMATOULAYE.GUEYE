@@ -123,7 +123,7 @@ class CompteService
         $compte = $query->find($compteId);
 
         if (!$compte) {
-            throw new CompteNotFoundException();
+            throw new CompteNotFoundException($compteId);
         }
 
         return $compte;
@@ -196,7 +196,7 @@ class CompteService
         $compte = CompteModel::with(['client.user'])->where('numeroCompte', $numeroCompte)->first();
 
         if (!$compte) {
-            throw new CompteNotFoundException();
+            throw new CompteNotFoundException($numeroCompte);
         }
 
         // Mettre à jour le titulaire si fourni
@@ -234,6 +234,28 @@ class CompteService
 
         // Sauvegarder le compte pour mettre à jour updated_at
         $compte->touch();
+
+        return $compte;
+    }
+
+    /**
+     * Supprime un compte bancaire (soft delete)
+     *
+     * @param string $compteId
+     * @return CompteModel
+     * @throws CompteNotFoundException
+     */
+    public function deleteCompte(string $compteId): CompteModel
+    {
+        // Récupérer le compte
+        $compte = $this->getCompteById($compteId);
+
+        // Changer le statut à 'ferme' avant la suppression
+        $compte->statut = 'ferme';
+        $compte->save();
+
+        // Soft delete
+        $compte->delete();
 
         return $compte;
     }

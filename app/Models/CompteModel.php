@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Services\GenerateNumeroCompte;
 use App\Services\CalculSoldeService;
 use App\Traits\UuidTrait;
 
 class CompteModel extends Model
 {
-       use HasFactory, UuidTrait;
+       use HasFactory, UuidTrait, SoftDeletes;
 
     protected $table = "comptes";
 
@@ -25,6 +26,8 @@ class CompteModel extends Model
         "client_id",
         "devise"
     ];
+
+    protected $dates = ['deleted_at'];
 
     protected $appends = [
         'solde'
@@ -66,12 +69,12 @@ class CompteModel extends Model
 
     /**
      * Scope global pour récupérer uniquement les comptes non supprimés
-     * Les comptes sont considérés comme supprimés s'ils ont un statut 'ferme'
+     * Les comptes sont considérés comme supprimés s'ils ont un statut 'ferme' ou sont soft deleted
      */
     protected static function booted()
     {
         static::addGlobalScope('nonSupprimes', function (Builder $builder) {
-            $builder->where('statut', '!=', 'ferme');
+            $builder->where('statut', '!=', 'ferme')->whereNull('deleted_at');
         });
 
         static::creating(function ($compte) {

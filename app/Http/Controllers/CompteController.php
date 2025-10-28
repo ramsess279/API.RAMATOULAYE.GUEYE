@@ -652,4 +652,90 @@ class CompteController extends Controller
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/comptes/{compteId}",
+     *     summary="Supprimer un compte bancaire",
+     *     description="Supprime un compte bancaire avec un soft delete. Le compte passe au statut 'ferme' et n'est plus visible dans les listes normales.",
+     *     operationId="deleteCompte",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(
+     *         name="compteId",
+     *         in="path",
+     *         description="ID du compte bancaire",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid", example="cc2577b1-bfce-4d0c-9250-50739c057bb0")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte supprimé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte supprimé avec succès"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                 @OA\Property(property="numeroCompte", type="string", example="CPT1761572199795"),
+     *                 @OA\Property(property="statut", type="string", example="ferme"),
+     *                 @OA\Property(property="dateFermeture", type="string", format="date-time", example="2025-10-19T11:15:00Z")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     @OA\Property(property="compteId", type="string", example="550e8400-e29b-41d4-a716-446655440000")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé - Token manquant ou invalide"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès refusé"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur"
+     *     ),
+     *     security={{"bearerAuth":{}}}
+     * )
+     */
+    public function destroy(string $compteId): JsonResponse
+    {
+        try {
+            // TODO: Implémenter l'authentification et l'autorisation
+            // Pour l'instant, on permet la suppression sans restriction
+
+            // Supprimer le compte via le service (soft delete)
+            $compte = $this->compteService->deleteCompte($compteId);
+
+            // Transformer les données pour la réponse
+            $data = [
+                'id' => $compte->id,
+                'numeroCompte' => $compte->numeroCompte,
+                'statut' => $compte->statut,
+                'dateFermeture' => $compte->deleted_at->toISOString()
+            ];
+
+            return $this->successResponse($data, 'Compte supprimé avec succès');
+
+        } catch (CompteNotFoundException $e) {
+            return $e->render(request());
+        } catch (\Exception $e) {
+            return $this->errorResponse('Une erreur inattendue est survenue lors de la suppression du compte.', 500);
+        }
+    }
+
 }
