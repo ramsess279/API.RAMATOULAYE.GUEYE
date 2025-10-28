@@ -1006,30 +1006,37 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "solde": {
-                                        "description": "Nouveau solde",
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 1500000
-                                    },
-                                    "devise": {
-                                        "description": "Nouvelle devise",
+                                    "titulaire": {
+                                        "description": "Nouveau nom du titulaire",
                                         "type": "string",
-                                        "enum": [
-                                            "FCFA",
-                                            "EUR",
-                                            "USD"
-                                        ],
-                                        "example": "FCFA"
+                                        "example": "Amadou Diallo Junior"
                                     },
-                                    "type": {
-                                        "description": "Nouveau type de compte",
-                                        "type": "string",
-                                        "enum": [
-                                            "epargne",
-                                            "cheque"
-                                        ],
-                                        "example": "epargne"
+                                    "informationsClient": {
+                                        "description": "Informations du client à mettre à jour",
+                                        "properties": {
+                                            "telephone": {
+                                                "description": "Nouveau numéro de téléphone",
+                                                "type": "string",
+                                                "example": "+221771234568"
+                                            },
+                                            "email": {
+                                                "description": "Nouvelle adresse email",
+                                                "type": "string",
+                                                "format": "email",
+                                                "example": "amadou.diallo@email.com"
+                                            },
+                                            "password": {
+                                                "description": "Nouveau mot de passe",
+                                                "type": "string",
+                                                "example": "nouveauMotDePasse123"
+                                            },
+                                            "cni": {
+                                                "description": "Nouveau numéro CNI",
+                                                "type": "string",
+                                                "example": "1234567890123"
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 },
                                 "type": "object"

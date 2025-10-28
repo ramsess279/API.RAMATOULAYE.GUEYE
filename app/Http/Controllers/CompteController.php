@@ -555,9 +555,16 @@ class CompteController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="solde", type="number", format="float", example=1500000, description="Nouveau solde"),
-     *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA", description="Nouvelle devise"),
-     *             @OA\Property(property="type", type="string", enum={"epargne", "cheque"}, example="epargne", description="Nouveau type de compte")
+     *             @OA\Property(property="titulaire", type="string", example="Amadou Diallo Junior", description="Nouveau nom du titulaire"),
+     *             @OA\Property(
+     *                 property="informationsClient",
+     *                 type="object",
+     *                 description="Informations du client à mettre à jour",
+     *                 @OA\Property(property="telephone", type="string", example="+221771234568", description="Nouveau numéro de téléphone"),
+     *                 @OA\Property(property="email", type="string", format="email", example="amadou.diallo@email.com", description="Nouvelle adresse email"),
+     *                 @OA\Property(property="password", type="string", example="nouveauMotDePasse123", description="Nouveau mot de passe"),
+     *                 @OA\Property(property="cni", type="string", example="1234567890123", description="Nouveau numéro CNI")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
