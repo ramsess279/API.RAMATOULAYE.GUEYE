@@ -224,8 +224,6 @@ class CompteController extends Controller
                 ]
             );
 
-        } catch (ValidationException $e) {
-            return $e->render($request);
         } catch (\Exception $e) {
             return $this->errorResponse('Une erreur inattendue est survenue.', 500);
         }
