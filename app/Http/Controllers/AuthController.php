@@ -15,13 +15,9 @@ use Illuminate\Support\Facades\Cookie;
 use Laravel\Passport\Token;
 
 /**
- * @OA\Info(
- *     title="API Gestion Bancaire - Authentification",
- *     version="1.0.0",
- *     description="API d'authentification pour la gestion bancaire",
- *     @OA\Contact(
- *         email="contact@ramatoulaye.gueye.com"
- *     )
+ * @OA\Tag(
+ *     name="Authentification",
+ *     description="Endpoints d'authentification OAuth2"
  * )
  */
 class AuthController extends Controller
