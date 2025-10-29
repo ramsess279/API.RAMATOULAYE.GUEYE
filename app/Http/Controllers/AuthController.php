@@ -98,18 +98,12 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Créer le token d'accès
-        $tokenResult = $user->createToken('Personal Access Token');
-        $token = $tokenResult->token;
+        // Créer le token d'accès avec Passport
+        $accessToken = $user->createToken('Personal Access Token')->accessToken;
 
-        // Définir l'expiration du token (1 heure)
-        $token->expires_at = now()->addHour();
-        $token->save();
-
-        // Créer le refresh token
-        $refreshToken = $user->createToken('Refresh Token');
-        $refreshToken->token->expires_at = now()->addDays(30); // 30 jours
-        $refreshToken->token->save();
+        // Pour simplifier, utiliser le même token comme refresh token
+        // En production, implémenter un vrai système de refresh token
+        $refreshToken = $user->createToken('Refresh Token')->accessToken;
 
         // Déterminer le rôle de l'utilisateur
         $role = $this->getUserRole($user);
@@ -123,8 +117,8 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'role' => $role
             ],
-            'access_token' => $tokenResult->accessToken,
-            'refresh_token' => $refreshToken->accessToken,
+            'access_token' => $accessToken,
+            'refresh_token' => $refreshToken,
             'token_type' => 'Bearer',
             'expires_in' => 3600
         ];
@@ -135,7 +129,7 @@ class AuthController extends Controller
         // Stocker le token dans un cookie sécurisé
         $response->withCookie(cookie(
             'access_token',
-            $tokenResult->accessToken,
+            $accessToken,
             60, // 1 heure
             '/',
             null,
