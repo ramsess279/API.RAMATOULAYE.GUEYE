@@ -18,12 +18,17 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-         $this->call([
-             AdminSeeder::class,
-             ClientSeeder::class,
-             CompteModelSeeder::class,
-             TransactionSeeder::class,
-         ]);
+
+        // Créer les utilisateurs (admin et clients) en premier
+        $this->call([
+            UserSeeder::class,
+        ]);
+
+        // Puis créer les autres données
+        $this->call([
+            CompteModelSeeder::class,
+            TransactionSeeder::class,
+        ]);
     }
 }
  

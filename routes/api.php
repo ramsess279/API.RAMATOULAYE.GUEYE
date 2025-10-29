@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\CompteController;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -92,6 +93,13 @@ Route::prefix('v1')->group(function () {
         }
     });
 
+    // Routes d'authentification
+    Route::prefix('auth')->group(function () {
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/refresh', [AuthController::class, 'refresh']);
+        Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth.api');
+    });
+
     // Route pour l'authentification de l'utilisateur
     /**
      * @OA\Get(
@@ -104,31 +112,40 @@ Route::prefix('v1')->group(function () {
      *     )
      * )
      */
-    Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-        return $request->user();
+    Route::middleware('auth.api')->get('/user', function (Request $request) {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $request->user()->id,
+                'nom' => $request->user()->nom,
+                'prenom' => $request->user()->prenom,
+                'email' => $request->user()->email,
+                'role' => $request->user()->role
+            ]
+        ]);
     });
 
     // Routes pour les comptes bancaires
-    // TODO: Remettre ['rating', 'logging'] quand l'authentification sera implémentée
-    Route::middleware(['logging'])->group(function () {
+    Route::middleware(['auth.api', 'logging'])->group(function () {
+        // Routes accessibles aux admins et clients
         Route::get('/comptes', [CompteController::class, 'index'])
             ->name('comptes.index');
-        Route::post('/comptes', [CompteController::class, 'store'])
-            ->name('comptes.store');
         Route::get('/comptes/{compteId}', [CompteController::class, 'show'])
             ->name('comptes.show');
-        Route::patch('/comptes/{numeroCompte}', [CompteController::class, 'update'])
-            ->name('comptes.update');
-        Route::delete('/comptes/{compteId}', [CompteController::class, 'destroy'])
-            ->name('comptes.destroy');
-        Route::post('/comptes/{compteId}/bloquer', [CompteController::class, 'bloquer'])
-            ->name('comptes.bloquer');
-        Route::post('/comptes/{compteId}/debloquer', [CompteController::class, 'debloquer'])
-            ->name('comptes.debloquer');
-        Route::post('/comptes/{compteId}/archiver', [CompteController::class, 'archiver'])
-            ->name('comptes.archiver');
-        Route::post('/comptes/{compteId}/desarchiver', [CompteController::class, 'desarchiver'])
-            ->name('comptes.desarchiver');
+
+        // Routes réservées aux admins uniquement
+        Route::middleware('role:admin')->group(function () {
+            Route::post('/comptes', [CompteController::class, 'store'])
+                ->name('comptes.store');
+            Route::patch('/comptes/{numeroCompte}', [CompteController::class, 'update'])
+                ->name('comptes.update');
+            Route::delete('/comptes/{compteId}', [CompteController::class, 'destroy'])
+                ->name('comptes.destroy');
+            Route::post('/comptes/{compteId}/bloquer', [CompteController::class, 'bloquer'])
+                ->name('comptes.bloquer');
+            Route::post('/comptes/{compteId}/debloquer', [CompteController::class, 'debloquer'])
+                ->name('comptes.debloquer');
+        });
     });
 
     // Routes pour les clients
