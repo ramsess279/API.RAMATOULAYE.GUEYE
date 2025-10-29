@@ -18,8 +18,8 @@ class AdminSeeder extends Seeder
         $superAdminUser = User::create([
             'nom' => 'Super',
             'prenom' => 'Admin',
-            'email' => 'superadmin@banque.sn',
-            'password' => bcrypt('password123'),
+            'email' => 'admin@banque.com',
+            'password' => bcrypt('admin123'),
             'role' => 'admin',
             'telephone' => '+221 77 000 00 00',
             'dateNaissance' => '1980-01-01',

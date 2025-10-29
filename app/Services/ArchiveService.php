@@ -146,6 +146,25 @@ class ArchiveService
     }
 
     /**
+     * Recherche un compte archivé par numéro de compte
+     *
+     * @param string $numeroCompte Le numéro du compte recherché
+     * @return CompteArchive|null Le compte archivé ou null s'il n'existe pas
+     */
+    public function rechercherParNumero(string $numeroCompte): ?CompteArchive
+    {
+        try {
+            return CompteArchive::where('numeroCompte', $numeroCompte)->first();
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de la recherche par numéro dans l'archive: " . $e->getMessage(), [
+                'numeroCompte' => $numeroCompte,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return null;
+        }
+    }
+
+    /**
      * Recherche des comptes archivés selon des critères
      *
      * @param array $criteria Critères de recherche
@@ -175,6 +194,18 @@ class ArchiveService
 
             if (isset($criteria['statut'])) {
                 $query->statut($criteria['statut']);
+            }
+
+            // Recherche textuelle générale
+            if (isset($criteria['search'])) {
+                $search = $criteria['search'];
+                $query->where(function ($q) use ($search) {
+                    $q->where('numeroCompte', 'like', "%{$search}%")
+                      ->orWhere('client_nom', 'like', "%{$search}%")
+                      ->orWhere('client_prenom', 'like', "%{$search}%")
+                      ->orWhere('client_email', 'like', "%{$search}%")
+                      ->orWhere('client_telephone', 'like', "%{$search}%");
+                });
             }
 
             // Tri par défaut

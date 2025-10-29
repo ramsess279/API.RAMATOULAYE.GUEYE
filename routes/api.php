@@ -96,8 +96,6 @@ Route::prefix('v1')->group(function () {
     // Routes d'authentification
     Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-        Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth.api');
     });
 
     // Route pour l'authentification de l'utilisateur
@@ -143,9 +141,8 @@ Route::prefix('v1')->group(function () {
                 ->name('comptes.destroy');
             Route::post('/comptes/{compteId}/bloquer', [CompteController::class, 'bloquer'])
                 ->name('comptes.bloquer');
-            Route::post('/comptes/{compteId}/debloquer', [CompteController::class, 'debloquer'])
-                ->name('comptes.debloquer');
         });
+
     });
 
     // Routes pour les clients

@@ -25,13 +25,14 @@ class UserSeeder extends Seeder
             'telephone' => '+221771234567',
             'dateNaissance' => '1980-01-01',
             'adresse' => 'Dakar, Sénégal',
-            'genre' => 'M',
+            'genre' => 'homme',
             'role' => 'admin'
         ]);
 
         // Créer l'entrée admin correspondante
         Admin::create([
             'user_id' => $adminUser->id,
+            'numero_employe' => 'ADM001',
             'permissions' => json_encode([
                 'create_accounts' => true,
                 'update_accounts' => true,

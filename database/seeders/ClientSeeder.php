@@ -17,13 +17,13 @@ class ClientSeeder extends Seeder
         // Créer des utilisateurs clients et leurs profils clients
         $clientUsers = [
             [
-                'name' => 'Amadou Diop',
-                'email' => 'amadou.diop@example.com',
-                'telephone' => '+221 77 123 45 67',
+                'name' => 'Amadou Diallo',
+                'email' => 'amadou.diallo@email.com',
+                'telephone' => '+221771234567',
                 'date_naissance' => '1985-03-15',
                 'adresse' => '123 Rue de la Paix, Dakar',
                 'client_data' => [
-                    'nom' => 'Diop',
+                    'nom' => 'Diallo',
                     'prenom' => 'Amadou',
                     'genre' => 'homme',
                     'cni' => '1234567890123',
@@ -34,8 +34,8 @@ class ClientSeeder extends Seeder
             ],
             [
                 'name' => 'Fatou Sarr',
-                'email' => 'fatou.sarr@example.com',
-                'telephone' => '+221 78 987 65 43',
+                'email' => 'fatou.sarr@email.com',
+                'telephone' => '+221772345678',
                 'date_naissance' => '1990-07-22',
                 'adresse' => '456 Avenue Léopold Sédar Senghor, Dakar',
                 'client_data' => [
@@ -50,8 +50,8 @@ class ClientSeeder extends Seeder
             ],
             [
                 'name' => 'Moussa Ndiaye',
-                'email' => 'moussa.ndiaye@example.com',
-                'telephone' => '+221 76 555 44 33',
+                'email' => 'moussa.ndiaye@email.com',
+                'telephone' => '+221773456789',
                 'date_naissance' => '1978-11-08',
                 'adresse' => '789 Boulevard de la République, Dakar',
                 'client_data' => [
@@ -64,6 +64,38 @@ class ClientSeeder extends Seeder
                     'lieu_delivrance_cni' => 'Saint-Louis, Sénégal',
                 ]
             ],
+            [
+                'name' => 'Aminata Ba',
+                'email' => 'aminata.ba@email.com',
+                'telephone' => '+221774567890',
+                'date_naissance' => '1988-05-12',
+                'adresse' => '321 Rue Kermel, Dakar',
+                'client_data' => [
+                    'nom' => 'Ba',
+                    'prenom' => 'Aminata',
+                    'genre' => 'femme',
+                    'cni' => '1111222233334',
+                    'date_delivrance_cni' => '2018-09-05',
+                    'date_expiration_cni' => '2028-09-05',
+                    'lieu_delivrance_cni' => 'Dakar, Sénégal',
+                ]
+            ],
+            [
+                'name' => 'Ibrahima Gueye',
+                'email' => 'ibrahima.gueye@email.com',
+                'telephone' => '+221775678901',
+                'date_naissance' => '1982-12-03',
+                'adresse' => '654 Avenue Pompiers, Dakar',
+                'client_data' => [
+                    'nom' => 'Gueye',
+                    'prenom' => 'Ibrahima',
+                    'genre' => 'homme',
+                    'cni' => '4444555566667',
+                    'date_delivrance_cni' => '2017-11-18',
+                    'date_expiration_cni' => '2027-11-18',
+                    'lieu_delivrance_cni' => 'Thiès, Sénégal',
+                ]
+            ],
         ];
 
         foreach ($clientUsers as $userData) {
@@ -71,7 +103,7 @@ class ClientSeeder extends Seeder
                 'nom' => $userData['client_data']['prenom'],
                 'prenom' => $userData['client_data']['nom'],
                 'email' => $userData['email'],
-                'password' => bcrypt('password123'),
+                'password' => bcrypt('client123'),
                 'role' => 'client',
                 'telephone' => $userData['telephone'],
                 'dateNaissance' => $userData['date_naissance'],
@@ -87,6 +119,9 @@ class ClientSeeder extends Seeder
                 'lieu_delivrance_cni' => $userData['client_data']['lieu_delivrance_cni'],
             ]);
         }
+
+        // Créer des comptes pour les clients créés manuellement
+        $this->call(CompteModelSeeder::class);
 
         // Créer 10 clients supplémentaires avec factory
         Client::factory(10)->create();

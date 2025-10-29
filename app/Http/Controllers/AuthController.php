@@ -12,13 +12,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cookie;
-use Laravel\Passport\Token;
 
 /**
- * @OA\Tag(
- *     name="Authentification",
- *     description="Endpoints d'authentification OAuth2"
- * )
+ * Authentification Controller
+ * Gère l'authentification des utilisateurs (Admin/Client)
  */
 class AuthController extends Controller
 {
@@ -36,7 +33,7 @@ class AuthController extends Controller
      *         @OA\JsonContent(
      *             required={"email", "password"},
      *             @OA\Property(property="email", type="string", format="email", example="admin@banque.com", description="Email de l'utilisateur"),
-     *             @OA\Property(property="password", type="string", example="password123", description="Mot de passe")
+     *             @OA\Property(property="password", type="string", example="admin123", description="Mot de passe")
      *         )
      *     ),
      *     @OA\Response(
@@ -99,11 +96,8 @@ class AuthController extends Controller
         $user = Auth::user();
 
         // Créer le token d'accès avec Passport
-        $accessToken = $user->createToken('Personal Access Token')->accessToken;
-
-        // Pour simplifier, utiliser le même token comme refresh token
-        // En production, implémenter un vrai système de refresh token
-        $refreshToken = $user->createToken('Refresh Token')->accessToken;
+        $tokenResult = $user->createToken('Personal Access Token');
+        $accessToken = $tokenResult->accessToken ?? $tokenResult->token;
 
         // Déterminer le rôle de l'utilisateur
         $role = $this->getUserRole($user);
@@ -118,7 +112,6 @@ class AuthController extends Controller
                 'role' => $role
             ],
             'access_token' => $accessToken,
-            'refresh_token' => $refreshToken,
             'token_type' => 'Bearer',
             'expires_in' => 3600
         ];
@@ -140,111 +133,6 @@ class AuthController extends Controller
         return $response;
     }
 
-    /**
-     * @OA\Post(
-     *     path="/auth/refresh",
-     *     summary="Rafraîchir le token d'accès",
-     *     description="Génère un nouveau token d'accès en utilisant le refresh token",
-     *     operationId="refresh",
-     *     tags={"Authentification"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"refresh_token"},
-     *             @OA\Property(property="refresh_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...", description="Refresh token valide")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Token rafraîchi avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Token rafraîchi"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."),
-     *                 @OA\Property(property="token_type", type="string", example="Bearer"),
-     *                 @OA\Property(property="expires_in", type="integer", example=3600)
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Refresh token invalide",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Refresh token invalide")
-     *         )
-     *     ),
-     *     security={{"bearerAuth":{}}}
-     * )
-     */
-    public function refresh(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'refresh_token' => 'required|string'
-        ]);
-
-        if ($validator->fails()) {
-            return $this->errorResponse('Refresh token requis', 422, $validator->errors());
-        }
-
-        // Trouver le token de rafraîchissement
-        $refreshToken = Token::where('id', $request->refresh_token)->first();
-
-        if (!$refreshToken || $refreshToken->expires_at < now()) {
-            return $this->errorResponse('Refresh token invalide ou expiré', 401);
-        }
-
-        $user = $refreshToken->user;
-
-        // Révoquer l'ancien token d'accès
-        $user->tokens()->where('name', 'Personal Access Token')->delete();
-
-        // Créer un nouveau token d'accès
-        $tokenResult = $user->createToken('Personal Access Token');
-        $token = $tokenResult->token;
-        $token->expires_at = now()->addHour();
-        $token->save();
-
-        $data = [
-            'access_token' => $tokenResult->accessToken,
-            'token_type' => 'Bearer',
-            'expires_in' => 3600
-        ];
-
-        return $this->successResponse($data, 'Token rafraîchi avec succès');
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/auth/logout",
-     *     summary="Déconnexion utilisateur",
-     *     description="Invalide le token d'accès actuel de l'utilisateur",
-     *     operationId="logout",
-     *     tags={"Authentification"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Déconnexion réussie",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Déconnexion réussie")
-     *         )
-     *     ),
-     *     security={{"bearerAuth":{}}}
-     * )
-     */
-    public function logout(Request $request): JsonResponse
-    {
-        // Révoquer le token actuel
-        $request->user()->token()->revoke();
-
-        // Supprimer le cookie
-        $response = $this->successResponse(null, 'Déconnexion réussie');
-        $response->withCookie(Cookie::forget('access_token'));
-
-        return $response;
-    }
 
     /**
      * Détermine le rôle de l'utilisateur connecté

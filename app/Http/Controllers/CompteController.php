@@ -251,7 +251,7 @@ class CompteController extends Controller
      * @OA\Parameter(
      *         name="compteId",
      *         in="path",
-     *         description="ID du compte bancaire bloqué",
+     *         description="ID du compte bancaire ",
      *         required=true,
      *         @OA\Schema(type="string", format="uuid", example="b6500996-a594-495b-ab68-c3727094f52d")
      *     ),
@@ -567,6 +567,7 @@ class CompteController extends Controller
     }
 
     /**
+    /**
      * @OA\Patch(
       *     path="/comptes/{numeroCompte}",
       *     summary="Mettre à jour un compte bancaire",
@@ -672,6 +673,7 @@ class CompteController extends Controller
             return $this->errorResponse('Une erreur inattendue est survenue lors de la mise à jour du compte.', 500);
         }
     }
+
 
     /**
      * @OA\Delete(
@@ -902,106 +904,6 @@ class CompteController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/comptes/{compteId}/debloquer",
-     *     summary="Débloquer un compte bancaire",
-     *     description="Débloque un compte bancaire précédemment bloqué. Le compte repasse au statut 'actif'.",
-     *     operationId="debloquerCompte",
-     *     tags={"Comptes"},
-     *     @OA\Parameter(
-     *         name="compteId",
-     *         in="path",
-     *         description="ID du compte bancaire",
-     *         required=true,
-     *         @OA\Schema(type="string", format="uuid", example="cc2577b1-bfce-4d0c-9250-50739c057bb0")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"motif"},
-     *             @OA\Property(property="motif", type="string", example="Vérification complétée", description="Motif du déblocage")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Compte débloqué avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Compte débloqué avec succès"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
-     *                 @OA\Property(property="statut", type="string", example="actif"),
-     *                 @OA\Property(property="dateDeblocage", type="string", format="date-time", example="2025-10-19T12:00:00Z")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Données invalides ou compte déjà actif",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Seul un compte bloqué peut être débloqué.")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Compte non trouvé",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(
-     *                 property="error",
-     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
-     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas"),
-     *                 @OA\Property(
-     *                     property="details",
-     *                     @OA\Property(property="compteId", type="string", example="550e8400-e29b-41d4-a716-446655440000")
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Non autorisé - Token manquant ou invalide"
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Accès refusé"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Erreur interne du serveur"
-     *     ),
-     *     security={{"bearerAuth":{}}}
-     * )
-     */
-    public function debloquer(DebloquerCompteRequest $request, string $compteId): JsonResponse
-    {
-        try {
-            // TODO: Implémenter l'authentification et l'autorisation
-            // Pour l'instant, on permet le déblocage sans restriction
-
-            // Débloquer le compte via le service
-            $compte = $this->compteService->debloquerCompte($compteId, $request->validated());
-
-            // Transformer les données pour la réponse
-            $data = [
-                'id' => $compte->id,
-                'statut' => $compte->statut,
-                'dateDeblocage' => now()->toISOString()
-            ];
-
-            return $this->successResponse($data, 'Compte débloqué avec succès');
-
-        } catch (CompteNotFoundException $e) {
-            return $e->render(request());
-        } catch (ValidationException $e) {
-            return $e->render($request);
-        } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage(), 400);
-        }
-    }
 
 
 }
