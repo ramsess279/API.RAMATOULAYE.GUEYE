@@ -867,13 +867,13 @@
                     "Comptes"
                 ],
                 "summary": "Supprimer un compte bancaire",
-                "description": "Supprime un compte bancaire avec un soft delete. Le compte passe au statut 'ferme' et n'est plus visible dans les listes normales.",
+                "description": "Supprime un compte bancaire avec un soft delete. Le compte passe au statut 'ferme' et n'est plus visible dans les listes normales. Seuls les comptes actifs peuvent être supprimés.",
                 "operationId": "deleteCompte",
                 "parameters": [
                     {
                         "name": "compteId",
                         "in": "path",
-                        "description": "ID du compte bancaire (doit être un compte épargne actif)",
+                        "description": "ID du compte bancaire (doit être un compte actif)",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -986,7 +986,7 @@
                     "Comptes"
                 ],
                 "summary": "Mettre à jour un compte bancaire",
-                "description": "Met à jour les informations d'un compte bancaire existant selon les permissions de l'utilisateur",
+                "description": "Met à jour les informations d'un compte bancaire existant selon les permissions de l'utilisateur. L'identifiant unique est le numéro de compte bancaire.",
                 "operationId": "updateCompte",
                 "parameters": [
                     {
@@ -1012,15 +1012,15 @@
                                         "example": "Amadou Diallo Junior"
                                     },
                                     "informationsClient": {
-                                        "description": "Informations du client à mettre à jour",
+                                        "description": "Informations du client à mettre à jour (tous les champs sont optionnels)",
                                         "properties": {
                                             "telephone": {
-                                                "description": "Nouveau numéro de téléphone",
+                                                "description": "Nouveau numéro de téléphone (doit être unique)",
                                                 "type": "string",
                                                 "example": "+221771234568"
                                             },
                                             "email": {
-                                                "description": "Nouvelle adresse email",
+                                                "description": "Nouvelle adresse email (doit être unique)",
                                                 "type": "string",
                                                 "format": "email",
                                                 "example": "amadou.diallo@email.com"
@@ -1029,11 +1029,6 @@
                                                 "description": "Nouveau mot de passe",
                                                 "type": "string",
                                                 "example": "nouveauMotDePasse123"
-                                            },
-                                            "cni": {
-                                                "description": "Nouveau numéro CNI",
-                                                "type": "string",
-                                                "example": "1234567890123"
                                             }
                                         },
                                         "type": "object"
@@ -1194,8 +1189,8 @@
                             "schema": {
                                 "required": [
                                     "motif",
-                                    "duree",
-                                    "unite"
+                                    "dateDebut",
+                                    "dateFin"
                                 ],
                                 "properties": {
                                     "motif": {
@@ -1203,19 +1198,17 @@
                                         "type": "string",
                                         "example": "Activité suspecte détectée"
                                     },
-                                    "duree": {
-                                        "description": "Durée du blocage",
-                                        "type": "integer",
-                                        "example": 30
-                                    },
-                                    "unite": {
-                                        "description": "Unité de temps",
+                                    "dateDebut": {
+                                        "description": "Date de début du blocage (YYYY-MM-DD)",
                                         "type": "string",
-                                        "enum": [
-                                            "jours",
-                                            "mois"
-                                        ],
-                                        "example": "mois"
+                                        "format": "date",
+                                        "example": "2025-10-28"
+                                    },
+                                    "dateFin": {
+                                        "description": "Date de fin du blocage (YYYY-MM-DD)",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-11-27"
                                     }
                                 },
                                 "type": "object"
@@ -1225,48 +1218,102 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Compte bloqué avec succès",
+                        "description": "Blocage effectué avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Compte bloqué avec succès"
-                                        },
-                                        "data": {
+                                    "oneOf": [
+                                        {
+                                            "title": "Blocage immédiat",
                                             "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                "success": {
+                                                    "type": "boolean",
+                                                    "example": true
                                                 },
-                                                "statut": {
+                                                "message": {
                                                     "type": "string",
-                                                    "example": "bloque"
+                                                    "example": "Blocage effectué avec succès"
                                                 },
-                                                "motifBlocage": {
-                                                    "type": "string",
-                                                    "example": "Activité suspecte détectée"
+                                                "data": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                        },
+                                                        "statut": {
+                                                            "type": "string",
+                                                            "example": "bloque"
+                                                        },
+                                                        "motifBlocage": {
+                                                            "type": "string",
+                                                            "example": "Activité suspecte détectée"
+                                                        },
+                                                        "dateBlocage": {
+                                                            "type": "string",
+                                                            "format": "date",
+                                                            "example": "2025-10-28"
+                                                        },
+                                                        "dateDeblocagePrevue": {
+                                                            "type": "string",
+                                                            "format": "date",
+                                                            "example": "2025-11-27"
+                                                        },
+                                                        "duree": {
+                                                            "type": "string",
+                                                            "example": "30 jours"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        {
+                                            "title": "Blocage programmé",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean",
+                                                    "example": true
                                                 },
-                                                "dateBlocage": {
+                                                "message": {
                                                     "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-10-19T11:20:00Z"
+                                                    "example": "Blocage programmé avec succès"
                                                 },
-                                                "dateDeblocagePrevue": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-11-18T11:20:00Z"
+                                                "data": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                        },
+                                                        "statut": {
+                                                            "type": "string",
+                                                            "example": "actif"
+                                                        },
+                                                        "dateBlocageProgramme": {
+                                                            "type": "string",
+                                                            "format": "date",
+                                                            "example": "2025-10-30"
+                                                        },
+                                                        "dateDeblocagePrevue": {
+                                                            "type": "string",
+                                                            "format": "date",
+                                                            "example": "2025-11-27"
+                                                        },
+                                                        "duree": {
+                                                            "type": "string",
+                                                            "example": "28 jours"
+                                                        },
+                                                        "motifBlocageProgramme": {
+                                                            "type": "string",
+                                                            "example": "Activité suspecte détectée"
+                                                        }
+                                                    },
+                                                    "type": "object"
                                                 }
                                             },
                                             "type": "object"
                                         }
-                                    },
-                                    "type": "object"
+                                    ]
                                 }
                             }
                         }

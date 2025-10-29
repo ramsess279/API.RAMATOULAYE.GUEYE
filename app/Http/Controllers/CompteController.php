@@ -109,6 +109,13 @@ class CompteController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
+     *         name="includeArchived",
+     *         in="query",
+     *         description="Inclure les comptes archivés dans les résultats",
+     *         required=false,
+     *         @OA\Schema(type="boolean", default=false)
+     *     ),
+     *     @OA\Parameter(
      *         name="sort",
      *         in="query",
      *         description="Tri par champ",
@@ -327,8 +334,8 @@ class CompteController extends Controller
             // TODO: Implémenter l'authentification et l'autorisation
             // Pour l'instant, on récupère le compte sans restriction
 
-            // Récupération du compte par ID
-            $compte = $this->compteService->getCompteById($compteId);
+            // Récupération du compte par ID (recherche hybride DB principale + archive)
+            $compte = $this->compteService->getCompteByIdHybrid($compteId);
 
             // Transformation des données
             $data = $this->compteService->transformCompteData($compte);
@@ -534,39 +541,59 @@ class CompteController extends Controller
         } catch (ValidationException $e) {
             return $e->render($request);
         } catch (\Exception $e) {
+            // Log l'erreur pour le debugging
+            Log::error('Erreur lors de la création du compte: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+
+            // Retourner un message d'erreur plus spécifique selon le type d'erreur
+            $errorMessage = $e->getMessage();
+
+            if (str_contains($errorMessage, 'ERREUR VALIDATION')) {
+                return $this->errorResponse($errorMessage, 400);
+            }
+
+            if (str_contains($errorMessage, 'incohérente')) {
+                return $this->errorResponse($errorMessage, 400);
+            }
+
+            if (str_contains($errorMessage, 'obligatoire')) {
+                return $this->errorResponse($errorMessage, 400);
+            }
+
             return $this->errorResponse('Une erreur inattendue est survenue lors de la création du compte.', 500);
         }
     }
 
     /**
      * @OA\Patch(
-     *     path="/comptes/{numeroCompte}",
-     *     summary="Mettre à jour un compte bancaire",
-     *     description="Met à jour les informations d'un compte bancaire existant selon les permissions de l'utilisateur",
-     *     operationId="updateCompte",
-     *     tags={"Comptes"},
-     *     @OA\Parameter(
-     *         name="numeroCompte",
-     *         in="path",
-     *         description="Numéro du compte bancaire",
-     *         required=true,
-     *         @OA\Schema(type="string", example="CPT1761572199795")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="titulaire", type="string", example="Amadou Diallo Junior", description="Nouveau nom du titulaire"),
-     *             @OA\Property(
-     *                 property="informationsClient",
-     *                 type="object",
-     *                 description="Informations du client à mettre à jour",
-     *                 @OA\Property(property="telephone", type="string", example="+221771234568", description="Nouveau numéro de téléphone"),
-     *                 @OA\Property(property="email", type="string", format="email", example="amadou.diallo@email.com", description="Nouvelle adresse email"),
-     *                 @OA\Property(property="password", type="string", example="nouveauMotDePasse123", description="Nouveau mot de passe"),
-     *                 @OA\Property(property="cni", type="string", example="1234567890123", description="Nouveau numéro CNI")
-     *             )
-     *         )
-     *     ),
+      *     path="/comptes/{numeroCompte}",
+      *     summary="Mettre à jour un compte bancaire",
+      *     description="Met à jour les informations d'un compte bancaire existant selon les permissions de l'utilisateur. L'identifiant unique est le numéro de compte bancaire.",
+      *     operationId="updateCompte",
+      *     tags={"Comptes"},
+      *     @OA\Parameter(
+      *         name="numeroCompte",
+      *         in="path",
+      *         description="Numéro du compte bancaire",
+      *         required=true,
+      *         @OA\Schema(type="string", example="CPT1761572199795")
+      *     ),
+      *     @OA\RequestBody(
+      *         required=true,
+      *         @OA\JsonContent(
+      *             @OA\Property(property="titulaire", type="string", example="Amadou Diallo Junior", description="Nouveau nom du titulaire"),
+      *             @OA\Property(
+      *                 property="informationsClient",
+      *                 type="object",
+      *                 description="Informations du client à mettre à jour (tous les champs sont optionnels)",
+      *                 @OA\Property(property="telephone", type="string", example="+221771234568", description="Nouveau numéro de téléphone (doit être unique)"),
+      *                 @OA\Property(property="email", type="string", format="email", example="amadou.diallo@email.com", description="Nouvelle adresse email (doit être unique)"),
+      *                 @OA\Property(property="password", type="string", example="nouveauMotDePasse123", description="Nouveau mot de passe")
+      *             )
+      *         )
+      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Compte mis à jour avec succès",
@@ -648,18 +675,18 @@ class CompteController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/comptes/{compteId}",
-     *     summary="Supprimer un compte bancaire",
-     *     description="Supprime un compte bancaire avec un soft delete. Le compte passe au statut 'ferme' et n'est plus visible dans les listes normales.",
-     *     operationId="deleteCompte",
-     *     tags={"Comptes"},
-     * @OA\Parameter(
-     *         name="compteId",
-     *         in="path",
-     *         description="ID du compte bancaire (doit être un compte épargne actif)",
-     *         required=true,
-     *         @OA\Schema(type="string", format="uuid", example="b6500996-a594-495b-ab68-c3727094f52d")
-     *     ),
+      *     path="/comptes/{compteId}",
+      *     summary="Supprimer un compte bancaire",
+      *     description="Supprime un compte bancaire avec un soft delete. Le compte passe au statut 'ferme' et n'est plus visible dans les listes normales. Seuls les comptes actifs peuvent être supprimés.",
+      *     operationId="deleteCompte",
+      *     tags={"Comptes"},
+      * @OA\Parameter(
+      *         name="compteId",
+      *         in="path",
+      *         description="ID du compte bancaire (doit être un compte actif)",
+      *         required=true,
+      *         @OA\Schema(type="string", format="uuid", example="b6500996-a594-495b-ab68-c3727094f52d")
+      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Compte supprimé avec succès",
@@ -749,26 +776,46 @@ class CompteController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"motif", "duree", "unite"},
+     *             required={"motif", "dateDebut", "dateFin"},
      *             @OA\Property(property="motif", type="string", example="Activité suspecte détectée", description="Motif du blocage"),
-     *             @OA\Property(property="duree", type="integer", example=30, description="Durée du blocage"),
-     *             @OA\Property(property="unite", type="string", enum={"jours", "mois"}, example="mois", description="Unité de temps")
+     *             @OA\Property(property="dateDebut", type="string", format="date", example="2025-10-28", description="Date de début du blocage (YYYY-MM-DD)"),
+     *             @OA\Property(property="dateFin", type="string", format="date", example="2025-11-27", description="Date de fin du blocage (YYYY-MM-DD)")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Compte bloqué avec succès",
+     *         description="Blocage effectué avec succès",
      *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Compte bloqué avec succès"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
-     *                 @OA\Property(property="statut", type="string", example="bloque"),
-     *                 @OA\Property(property="motifBlocage", type="string", example="Activité suspecte détectée"),
-     *                 @OA\Property(property="dateBlocage", type="string", format="date-time", example="2025-10-19T11:20:00Z"),
-     *                 @OA\Property(property="dateDeblocagePrevue", type="string", format="date-time", example="2025-11-18T11:20:00Z")
-     *             )
+     *             oneOf={
+     *                 @OA\Schema(
+     *                     title="Blocage immédiat",
+     *                     @OA\Property(property="success", type="boolean", example=true),
+     *                     @OA\Property(property="message", type="string", example="Blocage effectué avec succès"),
+     *                     @OA\Property(
+     *                         property="data",
+     *                         @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                         @OA\Property(property="statut", type="string", example="bloque"),
+     *                         @OA\Property(property="motifBlocage", type="string", example="Activité suspecte détectée"),
+     *                         @OA\Property(property="dateBlocage", type="string", format="date", example="2025-10-28"),
+     *                         @OA\Property(property="dateDeblocagePrevue", type="string", format="date", example="2025-11-27"),
+     *                         @OA\Property(property="duree", type="string", example="30 jours")
+     *                     )
+     *                 ),
+     *                 @OA\Schema(
+     *                     title="Blocage programmé",
+     *                     @OA\Property(property="success", type="boolean", example=true),
+     *                     @OA\Property(property="message", type="string", example="Blocage programmé avec succès"),
+     *                     @OA\Property(
+     *                         property="data",
+     *                         @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                         @OA\Property(property="statut", type="string", example="actif"),
+     *                         @OA\Property(property="dateBlocageProgramme", type="string", format="date", example="2025-10-30"),
+     *                         @OA\Property(property="dateDeblocagePrevue", type="string", format="date", example="2025-11-27"),
+     *                         @OA\Property(property="duree", type="string", example="28 jours"),
+     *                         @OA\Property(property="motifBlocageProgramme", type="string", example="Activité suspecte détectée")
+     *                     )
+     *                 )
+     *             }
      *         )
      *     ),
      * @OA\Response(
@@ -820,13 +867,29 @@ class CompteController extends Controller
             $compte = $this->compteService->bloquerCompte($compteId, $request->validated());
 
             // Transformer les données pour la réponse
-            $data = [
-                'id' => $compte->id,
-                'statut' => $compte->statut,
-                'motifBlocage' => $compte->motifBlocage,
-                'dateBlocage' => $compte->dateBlocage?->toISOString(),
-                'dateDeblocagePrevue' => $compte->dateDeblocagePrevue?->toISOString()
-            ];
+            if ($compte->statut === 'actif' && $compte->dateBlocageProgramme) {
+                // Blocage programmé - réponse spécifique
+                $data = [
+                    'id' => $compte->id,
+                    'statut' => $compte->statut,
+                    'dateBlocageProgramme' => $compte->dateBlocageProgramme,
+                    'dateDeblocagePrevue' => $compte->dateDeblocagePrevue,
+                    'duree' => $compte->dureeBlocageProgramme . ' ' . $compte->uniteBlocageProgramme,
+                    'motifBlocageProgramme' => $compte->motifBlocageProgramme
+                ];
+                $message = 'Blocage programmé avec succès';
+            } else {
+                // Blocage immédiat - réponse normale
+                $data = [
+                    'id' => $compte->id,
+                    'statut' => $compte->statut,
+                    'motifBlocage' => $compte->motifBlocage,
+                    'dateBlocage' => $compte->dateBlocage,
+                    'dateDeblocagePrevue' => $compte->dateDeblocagePrevue,
+                    'duree' => $compte->dureeBlocage . ' ' . $compte->uniteBlocage
+                ];
+                $message = 'Blocage effectué avec succès';
+            }
 
             return $this->successResponse($data, 'Compte bloqué avec succès');
 

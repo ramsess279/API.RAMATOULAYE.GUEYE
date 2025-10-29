@@ -29,14 +29,14 @@ class CompteRequest extends FormRequest
             'soldeInitial' => 'required|numeric|min:10000',
             'devise' => 'required|in:FCFA,EUR,USD',
 
-            // Objet client
+            // Objet client - tous les champs sont obligatoires
             'client' => 'required|array',
             'client.id' => 'nullable|exists:clients,id',
             'client.titulaire' => 'required|string|max:255',
-            'client.nci' => ['nullable', new CniSenegalaisRule()],
+            'client.cni' => ['required', new CniSenegalaisRule()],
             'client.email' => 'required|email',
             'client.telephone' => ['required', new TelephoneSenegalaisRule()],
-            'client.adresse' => 'nullable|string|max:500',
+            'client.adresse' => 'required|string|max:500',
         ];
     }
 
@@ -62,12 +62,12 @@ class CompteRequest extends FormRequest
             'client.titulaire.required' => 'Le nom du titulaire est obligatoire.',
             'client.titulaire.string' => 'Le nom du titulaire doit être une chaîne de caractères.',
             'client.titulaire.max' => 'Le nom du titulaire ne peut pas dépasser 255 caractères.',
-            'client.nci.regex' => 'Le numéro CNI doit contenir exactement 13 chiffres.',
+            'client.cni.required' => 'Le numéro CNI est obligatoire.',
+            'client.cni.regex' => 'Le numéro CNI doit contenir exactement 13 chiffres.',
             'client.email.required' => 'L\'email est obligatoire.',
             'client.email.email' => 'L\'email doit être une adresse email valide.',
-            'client.email.unique' => 'Cet email est déjà utilisé.',
             'client.telephone.required' => 'Le numéro de téléphone est obligatoire.',
-            'client.telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
+            'client.adresse.required' => 'L\'adresse est obligatoire.',
             'client.adresse.string' => 'L\'adresse doit être une chaîne de caractères.',
             'client.adresse.max' => 'L\'adresse ne peut pas dépasser 500 caractères.',
         ];

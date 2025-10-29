@@ -78,6 +78,24 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'archive' => [
+            'driver' => 'pgsql',
+            'url' => env('DATABASE_URL_ARCHIVE'),
+            'host' => env('DB_ARCHIVE_HOST'),
+            'port' => env('DB_ARCHIVE_PORT', '5432'),
+            'database' => env('DB_ARCHIVE_DATABASE'),
+            'username' => env('DB_ARCHIVE_USERNAME'),
+            'password' => env('DB_ARCHIVE_PASSWORD'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'require',
+            'options' => [
+                PDO::PGSQL_ATTR_DISABLE_PREPARES => true,
+            ],
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL'),
