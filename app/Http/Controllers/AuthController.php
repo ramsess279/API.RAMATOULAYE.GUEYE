@@ -37,27 +37,20 @@ class AuthController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
-     *         description="Connexion réussie",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Connexion réussie"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 @OA\Property(property="user", type="object",
-     *                     @OA\Property(property="id", type="integer", example=1),
-     *                     @OA\Property(property="nom", type="string", example="Dupont"),
-     *                     @OA\Property(property="prenom", type="string", example="Jean"),
-     *                     @OA\Property(property="email", type="string", example="admin@banque.com"),
-     *                     @OA\Property(property="role", type="string", enum={"admin", "client"}, example="admin")
-     *                 ),
-     *                 @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."),
-     *                 @OA\Property(property="refresh_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."),
-     *                 @OA\Property(property="token_type", type="string", example="Bearer"),
-     *                 @OA\Property(property="expires_in", type="integer", example=3600)
-     *             )
-     *         )
-     *     ),
+      *         response=200,
+      *         description="Connexion réussie",
+      *         @OA\JsonContent(
+      *             @OA\Property(property="success", type="boolean", example=true),
+      *             @OA\Property(property="message", type="string", example="Connexion réussie"),
+      *             @OA\Property(
+      *                 property="data",
+      *                 @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiYzlhYWIyNmMxNjU5YmY5YjQ5MTY5MjBiOTZkMTk3ZmQ2MTdlMDNlZDE5YWMxZWQ0NmU1NjJkZjcxYjFkMjc3MmZmNDgxNmEyN2E4ZDNlYjciLCJpYXQiOjE3NjE3Nzk4OTQuODc3Mzg3LCJuYmYiOjE3NjE3Nzk4OTQuODc3Mzk1LCJleHAiOjE3OTMzMTU4OTQuMjQwODIyLCJzdWIiOiJhMGQ1NmVhZC1mYTA4LTQ5ZDAtOTlhNy0xMmZlNGU4OTg4NTQiLCJzY29wZXMiOltdfQ.FCyNG7PRvmYuV93q01WyUrXwistklxBnwZCPDS_eOyEMybdP1jJNGmeqDGCRZkFI249g8mxbn-or9UR-J1UgIsUP9wBqAMptSSrNzT7UdFRVIw6DHOde9BnDOpISRxX_7Ib_rkMHy7lo_SNx96SIbzETAtZODFS02RrgqaUAYW3WQJCIE4NyDpMDr-zNLHxy_v4hMOVsf-6a0MBLUR0ftXSyE9_xOvKtfwKycrrmMSDqQgUXlo4vgHTqnaM-2b_uNJYiW801LN3QIf4lgXPZYY53Qd1UgTEdaikwL4O3dAy4g5Ke__0zYNlX0h54ThWEsD_TmU2Hj8b_nnMG-D3fHet6SZ4jkm7LPhOLnm-MQvOXMfz7qUjO29pprXeC3va__ZQ76TSdUIaKUWYBDl-1OFhwpvkxEQGgynwY6FxxqKR4BHlE3uAJITviHCSv02S-4fOvWAPCE-FIrDFt66ANFCQ7oufq73vLNy4k3BFsMHMiGYrx_LcsIRF_cUAy0fQUWtgW86hSdyFfvNCMchdRHswFJ29qAwvxx2dG_2YdsW4p_x9oSS95kG18qSz6oe7ODk1jmjAuR9YOh8DbQISdRWfIrAz0Gb7soEwRJgcMi_ZE4ubrEDohMEX7rSPXw3Xqjqx5-6SXkVq1iPU_hlpzxHMxGantlrJUxoFcvGiUvVM"),
+      *                 @OA\Property(property="refresh_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiYzlhYWIyNmMxNjU5YmY5YjQ5MTY5MjBiOTZkMTk3ZmQ2MTdlMDNlZDE5YWMxZWQ0NmU1NjJkZjcxYjFkMjc3MmZmNDgxNmEyN2E4ZDNlYjciLCJpYXQiOjE3NjE3Nzk4OTQuODc3Mzg3LCJuYmYiOjE3NjE3Nzk4OTQuODc3Mzk1LCJleHAiOjE3OTMzMTU4OTQuMjQwODIyLCJzdWIiOiJhMGQ1NmVhZC1mYTA4LTQ5ZDAtOTlhNy0xMmZlNGU4OTg4NTQiLCJzY29wZXMiOltdfQ.FCyNG7PRvmYuV93q01WyUrXwistklxBnwZCPDS_eOyEMybdP1jJNGmeqDGCRZkFI249g8mxbn-or9UR-J1UgIsUP9wBqAMptSSrNzT7UdFRVIw6DHOde9BnDOpISRxX_7Ib_rkMHy7lo_SNx96SIbzETAtZODFS02RrgqaUAYW3WQJCIE4NyDpMDr-zNLHxy_v4hMOVsf-6a0MBLUR0ftXSyE9_xOvKtfwKycrrmMSDqQgUXlo4vgHTqnaM-2b_uNJYiW801LN3QIf4lgXPZYY53Qd1UgTEdaikwL4O3dAy4g5Ke__0zYNlX0h54ThWEsD_TmU2Hj8b_nnMG-D3fHet6SZ4jkm7LPhOLnm-MQvOXMfz7qUjO29pprXeC3va__ZQ76TSdUIaKUWYBDl-1OFhwpvkxEQGgynwY6FxxqKR4BHlE3uAJITviHCSv02S-4fOvWAPCE-FIrDFt66ANFCQ7oufq73vLNy4k3BFsMHMiGYrx_LcsIRF_cUAy0fQUWtgW86hSdyFfvNCMchdRHswFJ29qAwvxx2dG_2YdsW4p_x9oSS95kG18qSz6oe7ODk1jmjAuR9YOh8DbQISdRWfIrAz0Gb7soEwRJgcMi_ZE4ubrEDohMEX7rSPXw3Xqjqx5-6SXkVq1iPU_hlpzxHMxGantlrJUxoFcvGiUvVM"),
+      *                 @OA\Property(property="token_type", type="string", example="Bearer"),
+      *                 @OA\Property(property="expires_in", type="integer", example=3600)
+      *             )
+      *         )
+      *     ),
      *     @OA\Response(
      *         response=401,
      *         description="Identifiants invalides",
@@ -97,21 +90,16 @@ class AuthController extends Controller
 
         // Créer le token d'accès avec Passport
         $tokenResult = $user->createToken('Personal Access Token');
-        $accessToken = $tokenResult->accessToken ?? $tokenResult->token;
+        $accessToken = $tokenResult->accessToken;
 
-        // Déterminer le rôle de l'utilisateur
-        $role = $this->getUserRole($user);
+        // Créer le refresh token
+        $refreshTokenResult = $user->createToken('Refresh Token');
+        $refreshToken = $refreshTokenResult->accessToken;
 
         // Préparer la réponse
         $data = [
-            'user' => [
-                'id' => $user->id,
-                'nom' => $user->nom,
-                'prenom' => $user->prenom,
-                'email' => $user->email,
-                'role' => $role
-            ],
             'access_token' => $accessToken,
+            'refresh_token' => $refreshToken,
             'token_type' => 'Bearer',
             'expires_in' => 3600
         ];

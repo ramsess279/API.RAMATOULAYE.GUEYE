@@ -79,42 +79,13 @@
                                         },
                                         "data": {
                                             "properties": {
-                                                "user": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "integer",
-                                                            "example": 1
-                                                        },
-                                                        "nom": {
-                                                            "type": "string",
-                                                            "example": "Dupont"
-                                                        },
-                                                        "prenom": {
-                                                            "type": "string",
-                                                            "example": "Jean"
-                                                        },
-                                                        "email": {
-                                                            "type": "string",
-                                                            "example": "admin@banque.com"
-                                                        },
-                                                        "role": {
-                                                            "type": "string",
-                                                            "enum": [
-                                                                "admin",
-                                                                "client"
-                                                            ],
-                                                            "example": "admin"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                },
                                                 "access_token": {
                                                     "type": "string",
-                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiYzlhYWIyNmMxNjU5YmY5YjQ5MTY5MjBiOTZkMTk3ZmQ2MTdlMDNlZDE5YWMxZWQ0NmU1NjJkZjcxYjFkMjc3MmZmNDgxNmEyN2E4ZDNlYjciLCJpYXQiOjE3NjE3Nzk4OTQuODc3Mzg3LCJuYmYiOjE3NjE3Nzk4OTQuODc3Mzk1LCJleHAiOjE3OTMzMTU4OTQuMjQwODIyLCJzdWIiOiJhMGQ1NmVhZC1mYTA4LTQ5ZDAtOTlhNy0xMmZlNGU4OTg4NTQiLCJzY29wZXMiOltdfQ.FCyNG7PRvmYuV93q01WyUrXwistklxBnwZCPDS_eOyEMybdP1jJNGmeqDGCRZkFI249g8mxbn-or9UR-J1UgIsUP9wBqAMptSSrNzT7UdFRVIw6DHOde9BnDOpISRxX_7Ib_rkMHy7lo_SNx96SIbzETAtZODFS02RrgqaUAYW3WQJCIE4NyDpMDr-zNLHxy_v4hMOVsf-6a0MBLUR0ftXSyE9_xOvKtfwKycrrmMSDqQgUXlo4vgHTqnaM-2b_uNJYiW801LN3QIf4lgXPZYY53Qd1UgTEdaikwL4O3dAy4g5Ke__0zYNlX0h54ThWEsD_TmU2Hj8b_nnMG-D3fHet6SZ4jkm7LPhOLnm-MQvOXMfz7qUjO29pprXeC3va__ZQ76TSdUIaKUWYBDl-1OFhwpvkxEQGgynwY6FxxqKR4BHlE3uAJITviHCSv02S-4fOvWAPCE-FIrDFt66ANFCQ7oufq73vLNy4k3BFsMHMiGYrx_LcsIRF_cUAy0fQUWtgW86hSdyFfvNCMchdRHswFJ29qAwvxx2dG_2YdsW4p_x9oSS95kG18qSz6oe7ODk1jmjAuR9YOh8DbQISdRWfIrAz0Gb7soEwRJgcMi_ZE4ubrEDohMEX7rSPXw3Xqjqx5-6SXkVq1iPU_hlpzxHMxGantlrJUxoFcvGiUvVM"
                                                 },
                                                 "refresh_token": {
                                                     "type": "string",
-                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiYzlhYWIyNmMxNjU5YmY5YjQ5MTY5MjBiOTZkMTk3ZmQ2MTdlMDNlZDE5YWMxZWQ0NmU1NjJkZjcxYjFkMjc3MmZmNDgxNmEyN2E4ZDNlYjciLCJpYXQiOjE3NjE3Nzk4OTQuODc3Mzg3LCJuYmYiOjE3NjE3Nzk4OTQuODc3Mzk1LCJleHAiOjE3OTMzMTU4OTQuMjQwODIyLCJzdWIiOiJhMGQ1NmVhZC1mYTA4LTQ5ZDAtOTlhNy0xMmZlNGU4OTg4NTQiLCJzY29wZXMiOltdfQ.FCyNG7PRvmYuV93q01WyUrXwistklxBnwZCPDS_eOyEMybdP1jJNGmeqDGCRZkFI249g8mxbn-or9UR-J1UgIsUP9wBqAMptSSrNzT7UdFRVIw6DHOde9BnDOpISRxX_7Ib_rkMHy7lo_SNx96SIbzETAtZODFS02RrgqaUAYW3WQJCIE4NyDpMDr-zNLHxy_v4hMOVsf-6a0MBLUR0ftXSyE9_xOvKtfwKycrrmMSDqQgUXlo4vgHTqnaM-2b_uNJYiW801LN3QIf4lgXPZYY53Qd1UgTEdaikwL4O3dAy4g5Ke__0zYNlX0h54ThWEsD_TmU2Hj8b_nnMG-D3fHet6SZ4jkm7LPhOLnm-MQvOXMfz7qUjO29pprXeC3va__ZQ76TSdUIaKUWYBDl-1OFhwpvkxEQGgynwY6FxxqKR4BHlE3uAJITviHCSv02S-4fOvWAPCE-FIrDFt66ANFCQ7oufq73vLNy4k3BFsMHMiGYrx_LcsIRF_cUAy0fQUWtgW86hSdyFfvNCMchdRHswFJ29qAwvxx2dG_2YdsW4p_x9oSS95kG18qSz6oe7ODk1jmjAuR9YOh8DbQISdRWfIrAz0Gb7soEwRJgcMi_ZE4ubrEDohMEX7rSPXw3Xqjqx5-6SXkVq1iPU_hlpzxHMxGantlrJUxoFcvGiUvVM"
                                                 },
                                                 "token_type": {
                                                     "type": "string",

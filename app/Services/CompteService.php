@@ -237,7 +237,6 @@ class CompteService
                 'devise' => $compte->devise,
                 'dateCreation' => $compte->created_at->toISOString(),
                 'statut' => $compte->statut,
-                'source' => 'active', // Indicateur que c'est un compte actif
                 'motifBlocage' => $compte->statut === 'bloque' ? ($compte->motifBlocage ?: 'Inactivité de 30+ jours') : null,
                 'metadata' => [
                     'derniereModification' => $compte->updated_at->toISOString(),
@@ -323,7 +322,6 @@ class CompteService
                     'devise' => $compte->devise,
                     'dateCreation' => $compte->created_at->toISOString(),
                     'statut' => $compte->statut,
-                    'source' => 'active', // Indicateur que c'est un compte actif
                     'motifBlocage' => $compte->statut === 'bloque' ? ($compte->motifBlocage ?: 'Inactivité de 30+ jours') : null,
                     'metadata' => [
                         'derniereModification' => $compte->updated_at->toISOString(),
@@ -735,7 +733,6 @@ class CompteService
         // D'abord chercher dans la DB principale
         try {
             $compte = $this->getCompteById($compteId, $clientId);
-            $compte->source = 'active'; // Marquer comme compte actif
             return $compte;
         } catch (CompteNotFoundException $e) {
             // Si pas trouvé dans la DB principale, chercher dans l'archive
