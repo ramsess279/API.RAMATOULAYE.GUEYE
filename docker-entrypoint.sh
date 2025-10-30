@@ -10,5 +10,8 @@ done
 echo "Database is up - executing migrations"
 php artisan migrate --force
 
+echo "Installing Passport keys..."
+php artisan passport:install --force
+
 echo "Starting Laravel application..."
 exec "$@"
