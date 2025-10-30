@@ -129,6 +129,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/comptes', [CompteController::class, 'index'])
             ->name('comptes.index');
         Route::get('/comptes/{compteId}', [CompteController::class, 'show'])
+            ->middleware('client.account.access:compteId')
             ->name('comptes.show');
 
         // Routes réservées aux admins uniquement
@@ -141,6 +142,13 @@ Route::prefix('v1')->group(function () {
                 ->name('comptes.destroy');
             Route::post('/comptes/{compteId}/bloquer', [CompteController::class, 'bloquer'])
                 ->name('comptes.bloquer');
+        });
+
+        // Routes réservées aux clients pour leurs propres comptes
+        Route::middleware('role:client')->group(function () {
+            Route::patch('/comptes/{numeroCompte}', [CompteController::class, 'update'])
+                ->middleware('client.account.access:numeroCompte')
+                ->name('comptes.client.update');
         });
 
     });

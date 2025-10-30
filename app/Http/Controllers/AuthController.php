@@ -92,9 +92,8 @@ class AuthController extends Controller
         $tokenResult = $user->createToken('Personal Access Token');
         $accessToken = $tokenResult->accessToken;
 
-        // Créer le refresh token
-        $refreshTokenResult = $user->createToken('Refresh Token');
-        $refreshToken = $refreshTokenResult->accessToken;
+        // Créer le refresh token (utiliser le même token pour le moment)
+        $refreshToken = $accessToken;
 
         // Préparer la réponse
         $data = [

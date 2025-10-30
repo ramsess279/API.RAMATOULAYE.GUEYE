@@ -24,17 +24,21 @@ class CompteService
      * Inclut maintenant les comptes archivés si demandé
      *
      * @param Request $request
-     * @param int|null $clientId Filtre optionnel par client (pour les clients)
+     * @param string|null $clientId Filtre optionnel par client (pour les clients)
      * @return LengthAwarePaginator
      */
-    public function getComptesPagines(Request $request, ?int $clientId = null): LengthAwarePaginator
+    public function getComptesPagines(Request $request, ?string $clientId = null): LengthAwarePaginator
     {
         // Construction de la requête
         $query = CompteModel::with(['client.user']);
 
         // Appliquer le filtre client si fourni (pour l'autorisation)
         if ($clientId) {
-            $query->where('client_id', $clientId);
+            $query->whereHas('client', function ($q) use ($clientId) {
+                $q->where('cni', $clientId);
+            });
+            // Désactiver le scope global pour les clients (ils voient tous leurs comptes)
+            $query->withoutGlobalScope('nonSupprimes');
         }
 
         // Inclure les comptes supprimés (soft delete) si demandé
@@ -139,17 +143,23 @@ class CompteService
      * Récupère un compte spécifique par son ID
      *
      * @param string $compteId
-     * @param int|null $clientId Filtre optionnel par client (pour les clients)
+     * @param string|null $clientId Filtre optionnel par client (pour les clients)
      * @return CompteModel
      * @throws CompteNotFoundException
      */
-    public function getCompteById(string $compteId, ?int $clientId = null): CompteModel
+    public function getCompteById(string $compteId, ?string $clientId = null): CompteModel
     {
         $query = CompteModel::with(['client.user']);
 
         // Appliquer le filtre client si fourni (pour l'autorisation)
         if ($clientId) {
-            $query->where('client_id', $clientId);
+            $query->whereHas('client', function ($q) use ($clientId) {
+                $q->where('cni', $clientId);
+            });
+        } else {
+            // Si pas de clientId fourni, appliquer le scope global par défaut
+            // qui exclut les comptes supprimés (soft delete)
+            $query->withoutGlobalScope('nonSupprimes');
         }
 
         $compte = $query->find($compteId);
@@ -724,11 +734,11 @@ class CompteService
      * Récupère un compte spécifique par son ID (recherche hybride DB principale + archive)
      *
      * @param string $compteId
-     * @param int|null $clientId Filtre optionnel par client (pour les clients)
+     * @param string|null $clientId Filtre optionnel par client (pour les clients)
      * @return CompteModel|CompteArchive|null
      * @throws CompteNotFoundException
      */
-    public function getCompteByIdHybrid(string $compteId, ?int $clientId = null)
+    public function getCompteByIdHybrid(string $compteId, ?string $clientId = null)
     {
         // D'abord chercher dans la DB principale
         try {

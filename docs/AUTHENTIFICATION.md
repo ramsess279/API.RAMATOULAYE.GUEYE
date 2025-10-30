@@ -6,6 +6,11 @@ L'API utilise **OAuth2** avec Laravel Passport pour l'authentification. Tous les
 
 ## 📋 Comptes de test
 
+{
+  "email": "amadou.diallo@email.com",
+  "password": "client123"
+}
+
 | Rôle | Email | Mot de passe | Permissions |
 |------|-------|-------------|-------------|
 | **Admin** | `admin@banque.com` | `admin123` | Toutes les opérations |
