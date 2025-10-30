@@ -4,7 +4,11 @@ namespace App\Services;
 
 use App\Models\Client;
 use App\Models\User;
+use App\Services\CodeGenerationService;
+use App\Services\EmailService;
+use App\Services\SmsService;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Service responsable de la vérification et création de clients
@@ -13,6 +17,19 @@ use Illuminate\Support\Facades\Hash;
 class ClientCreationService
 {
     private bool $clientNewlyCreated = false;
+    private CodeGenerationService $codeGenerationService;
+    private EmailService $emailService;
+    private SmsService $smsService;
+
+    public function __construct(
+        CodeGenerationService $codeGenerationService,
+        EmailService $emailService,
+        SmsService $smsService
+    ) {
+        $this->codeGenerationService = $codeGenerationService;
+        $this->emailService = $emailService;
+        $this->smsService = $smsService;
+    }
 
     /**
      * Vérifie si un client existe ou le crée s'il n'existe pas
@@ -45,6 +62,9 @@ class ClientCreationService
         // Aucun client trouvé, créer un nouveau
         $user = $this->createUser($clientData);
         $client = $this->createClient($user, $clientData);
+
+        // Générer et envoyer le code de vérification
+        $this->generateAndSendVerificationCode($user);
 
         $this->clientNewlyCreated = true;
         return $client;
@@ -144,6 +164,45 @@ class ClientCreationService
             if ($client && $client->cni !== $clientData['cni']) {
                 throw new \Exception("ERREUR VALIDATION: L'adresse email '{$clientData['email']}' est déjà associée à un autre client (CNI: {$client->cni}). Un email ne peut être lié qu'à un seul CNI.");
             }
+        }
+    }
+
+    /**
+     * Génère et envoie le code de vérification au nouveau client
+     *
+     * @param User $user
+     */
+    private function generateAndSendVerificationCode(User $user): void
+    {
+        // Générer le code de vérification
+        $codeData = $this->codeGenerationService->generateCodeWithExpiration(15); // 15 minutes
+
+        // Sauvegarder le code dans la base de données
+        $user->update([
+            'verification_code' => $codeData['code'],
+            'verification_code_expires_at' => $codeData['expires_at'],
+            'is_verified' => false
+        ]);
+
+        // Envoyer le code par email
+        try {
+            $this->emailService->sendVerificationCode($user->email, [
+                'nom' => $user->nom,
+                'prenom' => $user->prenom,
+                'code' => $codeData['code'],
+                'expires_in' => 15
+            ]);
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne pas interrompre le processus
+            Log::error('Erreur envoi email code vérification: ' . $e->getMessage());
+        }
+
+        // Envoyer le code par SMS
+        try {
+            $this->smsService->sendVerificationCode($user->telephone, $codeData['code']);
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne pas interrompre le processus
+            Log::error('Erreur envoi SMS code vérification: ' . $e->getMessage());
         }
     }
 

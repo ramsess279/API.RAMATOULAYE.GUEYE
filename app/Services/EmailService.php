@@ -123,6 +123,74 @@ L'équipe de la Banque
     }
 
     /**
+     * Envoie un email avec le code de vérification
+     *
+     * @param string $email
+     * @param array $data
+     * @return bool
+     */
+    public function sendVerificationCode(string $email, array $data): bool
+    {
+        try {
+            $subject = 'Code de vérification - Activation de votre compte bancaire';
+            $body = "
+Bonjour {$data['prenom']} {$data['nom']},
+
+Votre compte bancaire a été créé avec succès.
+
+Pour finaliser votre inscription, veuillez utiliser le code de vérification suivant :
+
+Code de vérification : {$data['code']}
+
+Ce code est valable pendant {$data['expires_in']} minutes.
+
+Instructions :
+- Utilisez ce code lors de votre première connexion
+- Ne partagez ce code avec personne
+- Le code expirera automatiquement après {$data['expires_in']} minutes
+
+Si vous n'avez pas demandé la création de ce compte, veuillez ignorer cet email.
+
+Cordialement,
+L'équipe de la Banque
+            ";
+
+            // Configuration pour Gmail
+            $headers = [
+                'MIME-Version: 1.0',
+                'Content-type: text/plain; charset=UTF-8',
+                'From: Banque <' . config('mail.from.address') . '>',
+                'Reply-To: support@banque.com',
+                'X-Mailer: PHP/' . phpversion()
+            ];
+
+            // Envoi de l'email
+            $result = mail($email, $subject, $body, implode("\r\n", $headers));
+
+            if ($result) {
+                Log::info('Email de vérification envoyé', [
+                    'email' => $email,
+                    'code' => $data['code'],
+                    'timestamp' => now()->toISOString()
+                ]);
+                return true;
+            } else {
+                Log::error('Échec de l\'envoi de l\'email de vérification', [
+                    'email' => $email
+                ]);
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi de l\'email de vérification', [
+                'email' => $email,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Log l'envoi d'email pour traçabilité
      *
      * @param User $user

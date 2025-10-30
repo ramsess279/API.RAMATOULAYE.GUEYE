@@ -70,6 +70,29 @@ class SmsService
     }
 
     /**
+     * Envoie un SMS avec le code de vérification
+     *
+     * @param string $telephone
+     * @param string $code
+     * @return bool
+     */
+    public function sendVerificationCode(string $telephone, string $code): bool
+    {
+        try {
+            $message = "BANQUE: Votre code de vérification est: {$code}. Valable 15 minutes.";
+
+            // Envoi réel avec SMSMode
+            return $this->sendSmsWithSmsMode($telephone, $message);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi du SMS de vérification', [
+                'telephone' => $telephone,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Log l'envoi de SMS pour traçabilité
      *
      * @param User $user
@@ -165,6 +188,94 @@ class SmsService
 
         } catch (\Exception $e) {
             Log::error('Exception AfricasTalking SMS', [
+                'telephone' => $telephone,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Envoie un SMS avec SMSMode
+     *
+     * @param string $telephone
+     * @param string $message
+     * @return bool
+     */
+    private function sendSmsWithSmsMode(string $telephone, string $message): bool
+    {
+        try {
+            $accessToken = config('services.smsmode.access_token');
+            $pseudo = config('services.smsmode.pseudo');
+
+            if (!$accessToken || !$pseudo) {
+                Log::warning('Configuration SMSMode manquante, SMS simulé', [
+                    'telephone' => $telephone,
+                    'message' => $message
+                ]);
+                return true; // Simulation en développement
+            }
+
+            // API SMSMode
+            $url = 'https://rest.smsmode.com/sms/send';
+
+            // Nettoyer le numéro de téléphone (enlever +221 pour le Sénégal)
+            $cleanPhone = preg_replace('/^\+221/', '', $telephone);
+            $cleanPhone = preg_replace('/^221/', '', $cleanPhone);
+
+            $data = [
+                'recipient' => '221' . $cleanPhone, // Format international requis
+                'body' => $message,
+                'sender' => 'BANQUE' // Nom de l'expéditeur
+            ];
+
+            $headers = [
+                'Accept: application/json',
+                'Content-Type: application/json',
+                'X-Api-Key: ' . $accessToken
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Pour développement
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+            if (curl_errno($ch)) {
+                Log::error('Erreur cURL SMSMode', [
+                    'error' => curl_error($ch),
+                    'telephone' => $telephone
+                ]);
+                curl_close($ch);
+                return false;
+            }
+
+            curl_close($ch);
+
+            $result = json_decode($response, true);
+
+            if ($httpCode === 200 && isset($result['smsId'])) {
+                Log::info('SMS SMSMode envoyé avec succès', [
+                    'telephone' => $telephone,
+                    'smsId' => $result['smsId']
+                ]);
+                return true;
+            } else {
+                Log::error('Erreur API SMSMode', [
+                    'telephone' => $telephone,
+                    'http_code' => $httpCode,
+                    'response' => $response
+                ]);
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Exception SMSMode SMS', [
                 'telephone' => $telephone,
                 'error' => $e->getMessage()
             ]);

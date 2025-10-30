@@ -43,4 +43,9 @@ return [
         'from' => env('AFRICASTALKING_FROM', 'BANQUE'),
     ],
 
+    'smsmode' => [
+        'access_token' => env('SMSMODE_ACCESS_TOKEN'),
+        'pseudo' => env('SMSMODE_PSEUDO'),
+    ],
+
 ];
