@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\CompteController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientController;
 
 /*
 |--------------------------------------------------------------------------
@@ -154,11 +155,13 @@ Route::prefix('v1')->group(function () {
     });
 
     // Routes pour les clients
-    // TODO: Créer le ClientController
-    // Route::middleware(['logging'])->group(function () {
-    //     Route::patch('/clients/{clientId}', [ClientController::class, 'update'])
-    //         ->name('clients.update');
-    // });
+    Route::middleware(['auth.api', 'logging'])->group(function () {
+        // Recherche de client (réservé aux admins)
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/clients/search', [ClientController::class, 'search'])
+                ->name('clients.search');
+        });
+    });
 
 
 });

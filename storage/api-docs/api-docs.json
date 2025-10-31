@@ -150,6 +150,212 @@
                 }
             }
         },
+        "/clients/search": {
+            "get": {
+                "tags": [
+                    "Clients"
+                ],
+                "summary": "Rechercher un client par téléphone ou CNI",
+                "description": "Permet aux administrateurs de rechercher un client spécifique par son numéro de téléphone ou son numéro CNI",
+                "operationId": "searchClient",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Terme de recherche : numéro de téléphone ou numéro CNI",
+                        "required": true,
+                        "schema": {
+                            "description": "Téléphone au format sénégalais ou CNI à 13 chiffres",
+                            "type": "string",
+                            "example": "221701234567"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Client trouvé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Client trouvé avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                },
+                                                "nom": {
+                                                    "type": "string",
+                                                    "example": "Diallo"
+                                                },
+                                                "prenom": {
+                                                    "type": "string",
+                                                    "example": "Amadou"
+                                                },
+                                                "nomComplet": {
+                                                    "type": "string",
+                                                    "example": "Amadou Diallo"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "example": "amadou.diallo@email.com"
+                                                },
+                                                "telephone": {
+                                                    "type": "string",
+                                                    "example": "+221701234567"
+                                                },
+                                                "cni": {
+                                                    "type": "string",
+                                                    "example": "1234567890123"
+                                                },
+                                                "dateNaissance": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "1990-01-15"
+                                                },
+                                                "adresse": {
+                                                    "type": "string",
+                                                    "example": "Dakar, Sénégal"
+                                                },
+                                                "genre": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "M",
+                                                        "F"
+                                                    ],
+                                                    "example": "M"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "actif",
+                                                        "inactif"
+                                                    ],
+                                                    "example": "actif"
+                                                },
+                                                "dateDelivranceCni": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "dateExpirationCni": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "lieuDelivranceCni": {
+                                                    "type": "string"
+                                                },
+                                                "cniValide": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "dateCreation": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "derniereModification": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "metadata": {
+                                                    "properties": {
+                                                        "version": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Client non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Aucun client trouvé avec ce numéro de téléphone ou CNI"
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "CLIENT_NOT_FOUND"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Aucun client trouvé avec ce numéro de téléphone ou CNI"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Paramètre de recherche manquant ou invalide",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Le paramètre de recherche est requis"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé - Token manquant ou invalide"
+                    },
+                    "403": {
+                        "description": "Accès refusé - Droits insuffisants"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/comptes": {
             "get": {
                 "tags": [
@@ -1540,6 +1746,10 @@
         {
             "name": "Authentification",
             "description": "Authentification"
+        },
+        {
+            "name": "Clients",
+            "description": "Clients"
         },
         {
             "name": "Comptes",
