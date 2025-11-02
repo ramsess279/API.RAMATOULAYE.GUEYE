@@ -96,7 +96,8 @@ class AuthController extends Controller
         }
 
         // Pour les nouveaux clients (non vérifiés), vérifier le code d'authentification
-        if (!$user->is_verified && $user->verification_code) {
+        // Exception pour les admins qui n'ont pas besoin de code
+        if (!$user->is_verified && $user->verification_code && $user->role !== 'admin') {
             if (empty($request->code)) {
                 return $this->errorResponse('Code d\'authentification requis pour votre première connexion', 401);
             }
@@ -114,6 +115,12 @@ class AuthController extends Controller
             $user->is_verified = true;
             $user->verification_code = null;
             $user->verification_code_expires_at = null;
+            $user->save();
+        }
+
+        // Pour les admins, les marquer automatiquement comme vérifiés s'ils ne le sont pas
+        if ($user->role === 'admin' && !$user->is_verified) {
+            $user->is_verified = true;
             $user->save();
         }
 
