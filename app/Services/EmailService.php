@@ -69,16 +69,28 @@ L'équipe de la Banque
                 'X-Mailer: PHP/' . phpversion()
             ];
 
-            // Utiliser le mailer Laravel pour un envoi plus fiable
+            // Utiliser le mailer Laravel avec configuration de production
             try {
                 \Illuminate\Support\Facades\Mail::raw($body, function ($message) use ($user, $subject) {
                     $message->to($user->email)
                             ->subject($subject)
-                            ->from(config('mail.from.address'), config('mail.from.name'));
+                            ->from(config('mail.from.address'), config('mail.from.name'))
+                            ->replyTo(config('mail.from.address'), config('mail.from.name'));
                 });
                 $result = true;
+                Log::info('Email envoyé avec succès', [
+                    'to' => $user->email,
+                    'subject' => $subject,
+                    'mailer' => config('mail.default'),
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port')
+                ]);
             } catch (\Exception $e) {
-                Log::error('Erreur envoi email Laravel: ' . $e->getMessage());
+                Log::error('Erreur envoi email Laravel: ' . $e->getMessage(), [
+                    'to' => $user->email,
+                    'subject' => $subject,
+                    'trace' => $e->getTraceAsString()
+                ]);
                 $result = false;
             }
 
@@ -173,16 +185,28 @@ L'équipe de la Banque
                 'X-Mailer: PHP/' . phpversion()
             ];
 
-            // Utiliser le mailer Laravel pour un envoi plus fiable
+            // Utiliser le mailer Laravel avec configuration de production
             try {
                 \Illuminate\Support\Facades\Mail::raw($body, function ($message) use ($email, $subject) {
                     $message->to($email)
                             ->subject($subject)
-                            ->from(config('mail.from.address'), config('mail.from.name'));
+                            ->from(config('mail.from.address'), config('mail.from.name'))
+                            ->replyTo(config('mail.from.address'), config('mail.from.name'));
                 });
                 $result = true;
+                Log::info('Email de vérification envoyé avec succès', [
+                    'to' => $email,
+                    'subject' => $subject,
+                    'mailer' => config('mail.default'),
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port')
+                ]);
             } catch (\Exception $e) {
-                Log::error('Erreur envoi email Laravel: ' . $e->getMessage());
+                Log::error('Erreur envoi email de vérification Laravel: ' . $e->getMessage(), [
+                    'to' => $email,
+                    'subject' => $subject,
+                    'trace' => $e->getTraceAsString()
+                ]);
                 $result = false;
             }
 
