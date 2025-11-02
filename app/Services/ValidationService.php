@@ -101,4 +101,49 @@ class ValidationService
     {
         return $value === null || in_array($value, $allowedValues);
     }
+
+    /**
+     * Validate transaction
+     */
+    public function validateTransaction(\App\Models\CompteModel $compte, array $transactionData): void
+    {
+        // Check if account is active
+        if ($compte->statut !== 'actif') {
+            throw new \Exception('Le compte n\'est pas actif. Impossible de réaliser la transaction.');
+        }
+
+        $montant = $transactionData['montant'];
+        $type = $transactionData['type'];
+
+        switch ($type) {
+            case 'retrait':
+                if ($compte->solde < $montant) {
+                    throw new \Exception('Solde insuffisant pour effectuer ce retrait.');
+                }
+                break;
+
+            case 'transfert':
+                if ($compte->solde < $montant) {
+                    throw new \Exception('Solde insuffisant pour effectuer ce transfert.');
+                }
+                // Additional validation for destination account would go here
+                break;
+
+            case 'depot':
+                // Deposits are always allowed for active accounts
+                break;
+
+            default:
+                throw new \Exception('Type de transaction non valide.');
+        }
+
+        // Check daily transaction limits (example: max 5M per day)
+        $todayTransactions = $compte->transactions()
+            ->whereDate('date_transaction', today())
+            ->sum('montant');
+
+        if (($todayTransactions + $montant) > 5000000) { // 5M FCFA limit
+            throw new \Exception('Limite de transactions journalière dépassée.');
+        }
+    }
 }

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\CompteController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\TransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -160,6 +161,31 @@ Route::prefix('v1')->group(function () {
         Route::middleware('role:admin')->group(function () {
             Route::get('/clients/search', [ClientController::class, 'search'])
                 ->name('clients.search');
+        });
+    });
+
+    // Routes pour les transactions
+    Route::middleware(['auth.api', 'logging'])->group(function () {
+        // Routes accessibles aux admins et clients
+        Route::get('/transactions', [TransactionController::class, 'index'])
+            ->name('transactions.index');
+        Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])
+            ->name('transactions.show');
+
+        // Routes réservées aux admins uniquement
+        Route::middleware('role:admin')->group(function () {
+            Route::post('/transactions', [TransactionController::class, 'store'])
+                ->name('transactions.store');
+            Route::patch('/transactions/{transaction}', [TransactionController::class, 'update'])
+                ->name('transactions.update');
+            Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])
+                ->name('transactions.destroy');
+        });
+
+        // Routes réservées aux clients pour leurs propres transactions
+        Route::middleware('role:client')->group(function () {
+            Route::get('/my-transactions', [TransactionController::class, 'getUserTransactions'])
+                ->name('transactions.user');
         });
     });
 
