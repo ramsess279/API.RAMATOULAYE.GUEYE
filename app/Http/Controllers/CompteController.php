@@ -209,11 +209,25 @@ class CompteController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            // TODO: Implémenter l'authentification et l'autorisation
-            // Pour l'instant, on récupère tous les comptes sans restriction
+            // Vérifier l'authentification
+            $user = auth('api')->user();
+            if (!$user) {
+                return $this->errorResponse('Authentification requise', 401);
+            }
 
-            // Récupération des comptes paginés
-            $comptes = $this->compteService->getComptesPagines($request);
+            // Les clients ne peuvent voir que leurs propres comptes
+            if ($user->role === 'client') {
+                $client = $user->client;
+                if (!$client) {
+                    return $this->errorResponse('Profil client non trouvé', 403);
+                }
+
+                // Récupération des comptes du client uniquement
+                $comptes = $this->compteService->getComptesByClient($client->id, $request);
+            } else {
+                // Admins peuvent voir tous les comptes
+                $comptes = $this->compteService->getComptesPagines($request);
+            }
 
             // Transformation des données
             $data = $this->compteService->transformComptesData($comptes);
@@ -331,11 +345,25 @@ class CompteController extends Controller
     public function show(string $compteId): JsonResponse
     {
         try {
-            // TODO: Implémenter l'authentification et l'autorisation
-            // Pour l'instant, on récupère le compte sans restriction
+            // Vérifier l'authentification
+            $user = auth('api')->user();
+            if (!$user) {
+                return $this->errorResponse('Authentification requise', 401);
+            }
 
-            // Récupération du compte par ID (recherche hybride DB principale + archive)
-            $compte = $this->compteService->getCompteByIdHybrid($compteId);
+            // Pour les clients, vérifier qu'ils accèdent à leur propre compte
+            if ($user->role === 'client') {
+                $client = $user->client;
+                if (!$client) {
+                    return $this->errorResponse('Profil client non trouvé', 403);
+                }
+
+                // Récupération du compte par ID avec vérification du propriétaire
+                $compte = $this->compteService->getCompteByIdHybrid($compteId, $client->id);
+            } else {
+                // Admins peuvent voir tous les comptes
+                $compte = $this->compteService->getCompteByIdHybrid($compteId);
+            }
 
             // Transformation des données
             $data = $this->compteService->transformCompteData($compte);

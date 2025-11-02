@@ -18,29 +18,43 @@ class EmailService
      *
      * @param User $user
      * @param CompteModel $compte
+     * @param string $temporaryPassword
      * @return bool
      */
-    public function sendAuthenticationEmail(User $user, CompteModel $compte): bool
+    public function sendAuthenticationEmail(User $user, CompteModel $compte, string $temporaryPassword, ?string $authenticationCode = null): bool
     {
         try {
-            // Récupérer le mot de passe temporaire depuis la base de données
-            $temporaryPassword = $this->getTemporaryPassword($user);
+            // Utiliser le code passé en paramètre, sinon récupérer depuis la base
+            $codeAuth = $authenticationCode;
+            if (!$codeAuth && $user->client) {
+                if ($user->client->code_auth) {
+                    $codeAuth = $user->client->code_auth;
+                } else {
+                    // Recharger depuis la base
+                    $freshClient = \App\Models\Client::find($user->client->id);
+                    $codeAuth = $freshClient ? $freshClient->code_auth : 'N/A';
+                }
+            }
+            $codeAuth = $codeAuth ?: 'N/A';
 
             // Contenu de l'email selon la spécification US 2.2
-            $subject = 'Authentification - Création de votre compte bancaire';
+            $subject = 'Informations de connexion - Création de votre compte bancaire';
             $body = "
 Bonjour {$user->prenom} {$user->nom},
 
 Votre compte bancaire a été créé avec succès.
 
-Informations de connexion :
+INFORMATIONS DE CONNEXION :
 - Email : {$user->email}
 - Mot de passe temporaire : {$temporaryPassword}
+- Code d'authentification : {$codeAuth}
 - Numéro de compte : {$compte->numeroCompte}
 
-Important :
-- Ce mot de passe est temporaire et doit être changé lors de votre première connexion.
-- Conservez ces informations en sécurité.
+INSTRUCTIONS IMPORTANTES :
+- Utilisez ces informations pour votre première connexion
+- Le mot de passe temporaire doit être changé lors de votre première connexion
+- Le code d'authentification est requis pour valider votre compte
+- Conservez ces informations en sécurité
 
 Cordialement,
 L'équipe de la Banque
@@ -55,8 +69,18 @@ L'équipe de la Banque
                 'X-Mailer: PHP/' . phpversion()
             ];
 
-            // Envoi de l'email
-            $result = mail($user->email, $subject, $body, implode("\r\n", $headers));
+            // Utiliser le mailer Laravel pour un envoi plus fiable
+            try {
+                \Illuminate\Support\Facades\Mail::raw($body, function ($message) use ($user, $subject) {
+                    $message->to($user->email)
+                            ->subject($subject)
+                            ->from(config('mail.from.address'), config('mail.from.name'));
+                });
+                $result = true;
+            } catch (\Exception $e) {
+                Log::error('Erreur envoi email Laravel: ' . $e->getMessage());
+                $result = false;
+            }
 
             if ($result) {
                 $this->logEmailSending($user, $compte, 'authentication');
@@ -106,21 +130,6 @@ L'équipe de la Banque
         }
     }
 
-    /**
-     * Récupère le mot de passe temporaire depuis la base de données
-     *
-     * @param User $user
-     * @return string
-     */
-    private function getTemporaryPassword(User $user): string
-    {
-        // Le mot de passe temporaire est stocké hashé, mais on ne peut pas le récupérer
-        // On génère un nouveau mot de passe temporaire pour l'email
-        // En production, il faudrait stocker le mot de passe en clair temporairement
-
-        // Pour l'instant, on utilise une logique simple : générer un mot de passe basé sur l'ID utilisateur
-        return 'TempPass' . substr(md5($user->id . now()), 0, 8);
-    }
 
     /**
      * Envoie un email avec le code de vérification
@@ -164,8 +173,18 @@ L'équipe de la Banque
                 'X-Mailer: PHP/' . phpversion()
             ];
 
-            // Envoi de l'email
-            $result = mail($email, $subject, $body, implode("\r\n", $headers));
+            // Utiliser le mailer Laravel pour un envoi plus fiable
+            try {
+                \Illuminate\Support\Facades\Mail::raw($body, function ($message) use ($email, $subject) {
+                    $message->to($email)
+                            ->subject($subject)
+                            ->from(config('mail.from.address'), config('mail.from.name'));
+                });
+                $result = true;
+            } catch (\Exception $e) {
+                Log::error('Erreur envoi email Laravel: ' . $e->getMessage());
+                $result = false;
+            }
 
             if ($result) {
                 Log::info('Email de vérification envoyé', [

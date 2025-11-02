@@ -64,6 +64,22 @@ class CreateCompteService
                     'code_auth' => $credentials['code'],
                     'code_expires_at' => now()->addHours(24) // Code valide 24h
                 ]);
+
+                // Générer et définir le code de vérification utilisateur (pour l'authentification)
+                $verificationCodeData = app(CodeGenerationService::class)->generateCodeWithExpiration(15);
+                $client->user->update([
+                    'verification_code' => $verificationCodeData['code'],
+                    'verification_code_expires_at' => $verificationCodeData['expires_at'],
+                    'is_verified' => false
+                ]);
+
+                // Debug: Afficher les codes générés
+                \Illuminate\Support\Facades\Log::info('Codes générés pour nouveau client', [
+                    'email' => $client->user->email,
+                    'code_auth_client' => $credentials['code'],
+                    'verification_code_user' => $verificationCodeData['code'],
+                    'temporary_password' => $credentials['password']
+                ]);
             }
 
             // Étape 3: Créer le compte
@@ -73,16 +89,22 @@ class CreateCompteService
             $this->createInitialDepositTransaction($compte, $data['soldeInitial']);
 
             // Étape 5: Déclencher l'événement de notification uniquement pour les nouveaux clients
-            if ($this->clientCreationService->isClientNewlyCreated()) {
-                // Récupérer les credentials générés
-                $credentials = $this->credentialGenerationService->generateCredentials();
+             if ($this->clientCreationService->isClientNewlyCreated()) {
+                 // S'assurer que les credentials existent (générés à l'étape 2)
+                 if (!isset($credentials)) {
+                     $credentials = $this->credentialGenerationService->generateCredentials();
+                 }
 
-                // Ajouter les credentials à la réponse
-                $compte->temporaryPassword = $credentials['password'];
-                $compte->authenticationCode = $credentials['code'];
+                 $temporaryPassword = $credentials['password'];
+                 $authenticationCode = $credentials['code'];
 
-                event(new SendClientNotification($client, $compte, true));
-            }
+                 // Ajouter les credentials à la réponse
+                 $compte->temporaryPassword = $temporaryPassword;
+                 $compte->authenticationCode = $authenticationCode;
+
+                 // Créer l'événement avec les credentials APRÈS avoir tout sauvegardé
+                 event(new SendClientNotification($client, $compte, true, $temporaryPassword, $authenticationCode));
+             }
 
             return $compte;
         });

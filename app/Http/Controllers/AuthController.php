@@ -33,7 +33,8 @@ class AuthController extends Controller
      *         @OA\JsonContent(
      *             required={"email", "password"},
      *             @OA\Property(property="email", type="string", format="email", example="admin@banque.com", description="Email de l'utilisateur"),
-     *             @OA\Property(property="password", type="string", example="admin123", description="Mot de passe")
+     *             @OA\Property(property="password", type="string", example="admin123", description="Mot de passe"),
+     *             @OA\Property(property="code", type="string", example="123456", description="Code d'authentification (optionnel pour nouveaux clients)")
      *         )
      *     ),
      *     @OA\Response(
@@ -74,19 +75,50 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required|string|min:6'
+            'password' => 'required|string|min:6',
+            'code' => 'nullable|string|size:6' // Code optionnel pour nouveaux clients
         ]);
 
         if ($validator->fails()) {
             return $this->errorResponse('Les données fournies sont invalides', 422, $validator->errors());
         }
 
-        // Tentative d'authentification
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        // Trouver l'utilisateur par email
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
             return $this->errorResponse('Identifiants invalides', 401);
         }
 
-        $user = Auth::user();
+        // Vérifier le mot de passe
+        if (!Hash::check($request->password, $user->password)) {
+            return $this->errorResponse('Identifiants invalides', 401);
+        }
+
+        // Pour les nouveaux clients (non vérifiés), vérifier le code d'authentification
+        if (!$user->is_verified && $user->verification_code) {
+            if (empty($request->code)) {
+                return $this->errorResponse('Code d\'authentification requis pour votre première connexion', 401);
+            }
+
+            if ($request->code !== $user->verification_code) {
+                return $this->errorResponse('Code d\'authentification invalide', 401);
+            }
+
+            // Vérifier si le code n'a pas expiré
+            if ($user->verification_code_expires_at && now()->isAfter($user->verification_code_expires_at)) {
+                return $this->errorResponse('Code d\'authentification expiré', 401);
+            }
+
+            // Marquer l'utilisateur comme vérifié et supprimer le code
+            $user->is_verified = true;
+            $user->verification_code = null;
+            $user->verification_code_expires_at = null;
+            $user->save();
+        }
+
+        // Authentifier l'utilisateur manuellement
+        Auth::login($user);
 
         // Créer le token d'accès avec Passport
         $tokenResult = $user->createToken('Personal Access Token');

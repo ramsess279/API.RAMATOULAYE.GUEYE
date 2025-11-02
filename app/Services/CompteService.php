@@ -70,6 +70,18 @@ class CompteService
     }
 
     /**
+     * Récupère les comptes d'un client spécifique
+     *
+     * @param int $clientId
+     * @param Request $request
+     * @return LengthAwarePaginator
+     */
+    public function getComptesByClient(int $clientId, Request $request): LengthAwarePaginator
+    {
+        return $this->getComptesPagines($request, $clientId);
+    }
+
+    /**
      * Applique les filtres à la requête
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
