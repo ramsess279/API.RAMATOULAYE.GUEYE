@@ -83,12 +83,17 @@ L'équipe de la Banque
                     'subject' => $subject,
                     'mailer' => config('mail.default'),
                     'host' => config('mail.mailers.smtp.host'),
-                    'port' => config('mail.mailers.smtp.port')
+                    'port' => config('mail.mailers.smtp.port'),
+                    'encryption' => config('mail.mailers.smtp.encryption'),
+                    'username' => config('mail.mailers.smtp.username') ? 'SET' : 'NOT_SET'
                 ]);
             } catch (\Exception $e) {
                 Log::error('Erreur envoi email Laravel: ' . $e->getMessage(), [
                     'to' => $user->email,
                     'subject' => $subject,
+                    'mailer' => config('mail.default'),
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port'),
                     'trace' => $e->getTraceAsString()
                 ]);
                 $result = false;
