@@ -63,8 +63,8 @@ class ClientCreationService
         $user = $this->createUser($clientData);
         $client = $this->createClient($user, $clientData);
 
-        // Générer et envoyer le code de vérification
-        $this->generateAndSendVerificationCode($user);
+        // NE PAS envoyer le code de vérification ici - il sera envoyé plus tard avec les credentials complets
+        // $this->generateAndSendVerificationCode($user);
 
         $this->clientNewlyCreated = true;
         return $client;
@@ -148,22 +148,16 @@ class ClientCreationService
      */
     private function validateNoExistingClientWithPhoneOrEmail(array $clientData): void
     {
-        // Vérifier si le téléphone existe déjà pour un autre CNI
+        // Vérifier si le téléphone existe déjà
         $existingUserByPhone = User::where('telephone', $clientData['telephone'])->first();
         if ($existingUserByPhone) {
-            $client = $existingUserByPhone->client;
-            if ($client && $client->cni !== $clientData['cni']) {
-                throw new \Exception("ERREUR VALIDATION: Le numéro de téléphone '{$clientData['telephone']}' est déjà associé à un autre client (CNI: {$client->cni}). Un téléphone ne peut être lié qu'à un seul CNI.");
-            }
+            throw new \Exception("ERREUR VALIDATION: Le numéro de téléphone '{$clientData['telephone']}' est déjà utilisé dans le système.");
         }
 
-        // Vérifier si l'email existe déjà pour un autre CNI
+        // Vérifier si l'email existe déjà
         $existingUserByEmail = User::where('email', $clientData['email'])->first();
         if ($existingUserByEmail) {
-            $client = $existingUserByEmail->client;
-            if ($client && $client->cni !== $clientData['cni']) {
-                throw new \Exception("ERREUR VALIDATION: L'adresse email '{$clientData['email']}' est déjà associée à un autre client (CNI: {$client->cni}). Un email ne peut être lié qu'à un seul CNI.");
-            }
+            throw new \Exception("ERREUR VALIDATION: L'adresse email '{$clientData['email']}' est déjà utilisée dans le système.");
         }
     }
 

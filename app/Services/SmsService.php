@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 class SmsService
 {
     /**
-     * Envoie un SMS avec le code d'authentification
+     * Envoie un SMS avec le code d'authentification et les informations de connexion (simulation uniquement)
      *
      * @param User $user
      * @param string $code
@@ -21,13 +21,22 @@ class SmsService
     public function sendCodeSms(User $user, string $code): bool
     {
         try {
-            // Message SMS selon la spécification US 2.2
-            $message = "BANQUE: Votre code d'authentification est: {$code}. Utilisez-le lors de votre première connexion.";
+            // Récupérer le mot de passe temporaire depuis le client
+            $temporaryPassword = $user->client ? $user->client->temporaryPassword : 'N/A';
+
+            // Récupérer le numéro de compte
+            $numeroCompte = 'N/A';
+            if ($user->client && $user->client->compte) {
+                $numeroCompte = $user->client->compte->numeroCompte;
+            }
+
+            // Message SMS complet avec toutes les informations
+            $message = "BANQUE: Compte créé! Email: {$user->email}, MDP temp: {$temporaryPassword}, Code auth: {$code}, Num compte: {$numeroCompte}";
 
             $this->logSmsSending($user, $code, 'authentication_code');
 
-            // Envoi réel avec AfricasTalking
-            return $this->sendSms($user->telephone, $message);
+            // Simulation uniquement pour les tests
+            return $this->simulateSms($user, $message);
         } catch (\Exception $e) {
             // Log l'erreur mais ne bloque pas la création du compte
             Log::error('Erreur lors de l\'envoi du SMS', [
@@ -38,6 +47,24 @@ class SmsService
 
             return false;
         }
+    }
+
+    /**
+     * Simule l'envoi d'un SMS pour les tests
+     *
+     * @param User $user
+     * @param string $message
+     * @return bool
+     */
+    private function simulateSms(User $user, string $message): bool
+    {
+        Log::info('SMS simulé (AfricasTalking non disponible)', [
+            'to' => $user->telephone,
+            'message' => $message,
+            'user_id' => $user->id
+        ]);
+
+        return true; // Simulation réussie
     }
 
     /**
@@ -70,7 +97,7 @@ class SmsService
     }
 
     /**
-     * Envoie un SMS avec le code de vérification
+     * Envoie un SMS avec le code de vérification (simulation uniquement)
      *
      * @param string $telephone
      * @param string $code
@@ -81,8 +108,8 @@ class SmsService
         try {
             $message = "BANQUE: Votre code de vérification est: {$code}. Valable 15 minutes.";
 
-            // Envoi réel avec SMSMode
-            return $this->sendSmsWithSmsMode($telephone, $message);
+            // Simulation uniquement pour les tests
+            return $this->simulateSmsForTest($telephone, $message);
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'envoi du SMS de vérification', [
                 'telephone' => $telephone,
@@ -90,6 +117,24 @@ class SmsService
             ]);
             return false;
         }
+    }
+
+    /**
+     * Simulation d'envoi SMS pour les tests (sans consommer de crédits)
+     *
+     * @param string $telephone
+     * @param string $message
+     * @return bool
+     */
+    private function simulateSmsForTest(string $telephone, string $message): bool
+    {
+        Log::info('SMS simulé (test gratuit)', [
+            'to' => $telephone,
+            'message' => $message,
+            'note' => 'Simulation pour économiser les crédits de test'
+        ]);
+
+        return true; // Simulation réussie
     }
 
     /**
@@ -196,6 +241,86 @@ class SmsService
     }
 
     /**
+     * Envoie un SMS avec Twilio (utilise les crédits de test gratuits)
+     *
+     * @param string $telephone
+     * @param string $message
+     * @return bool
+     */
+    private function sendSmsWithTwilio(string $telephone, string $message): bool
+    {
+        try {
+            $sid = config('services.twilio.sid');
+            $token = config('services.twilio.token');
+            $from = config('services.twilio.from');
+
+            if (!$sid || !$token || !$from) {
+                Log::warning('Configuration Twilio manquante', [
+                    'telephone' => $telephone,
+                    'message' => $message
+                ]);
+                return false;
+            }
+
+            // Utiliser l'API Twilio
+            $url = "https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages.json";
+
+            $data = [
+                'From' => $from,
+                'To' => $telephone,
+                'Body' => $message
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_USERPWD, $sid . ':' . $token);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+            if (curl_errno($ch)) {
+                Log::error('Erreur cURL Twilio', [
+                    'error' => curl_error($ch),
+                    'telephone' => $telephone
+                ]);
+                curl_close($ch);
+                return false;
+            }
+
+            curl_close($ch);
+
+            $result = json_decode($response, true);
+
+            if ($httpCode === 201 && isset($result['sid'])) {
+                Log::info('SMS Twilio envoyé avec succès (crédits de test)', [
+                    'telephone' => $telephone,
+                    'messageSid' => $result['sid'],
+                    'message' => $message
+                ]);
+                return true;
+            } else {
+                Log::error('Erreur API Twilio', [
+                    'telephone' => $telephone,
+                    'http_code' => $httpCode,
+                    'response' => $response
+                ]);
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Exception Twilio SMS', [
+                'telephone' => $telephone,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Envoie un SMS avec SMSMode
      *
      * @param string $telephone
@@ -216,30 +341,25 @@ class SmsService
                 return true; // Simulation en développement
             }
 
-            // API SMSMode
-            $url = 'https://rest.smsmode.com/sms/send';
+            // API SMSMode - URL corrigée selon la documentation
+            $url = 'https://api.smsmode.com/http/1.6/sendSMS.do';
 
             // Nettoyer le numéro de téléphone (enlever +221 pour le Sénégal)
             $cleanPhone = preg_replace('/^\+221/', '', $telephone);
             $cleanPhone = preg_replace('/^221/', '', $cleanPhone);
 
-            $data = [
-                'recipient' => '221' . $cleanPhone, // Format international requis
-                'body' => $message,
-                'sender' => 'BANQUE' // Nom de l'expéditeur
-            ];
-
-            $headers = [
-                'Accept: application/json',
-                'Content-Type: application/json',
-                'X-Api-Key: ' . $accessToken
+            // Format des paramètres pour SMSMode HTTP API
+            $params = [
+                'accessToken' => $accessToken,
+                'message' => $message,
+                'numero' => '221' . $cleanPhone,
+                'emetteur' => 'BANQUE',
+                'stop' => 0
             ];
 
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query($params));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Pour développement
 
@@ -257,22 +377,25 @@ class SmsService
 
             curl_close($ch);
 
-            $result = json_decode($response, true);
-
-            if ($httpCode === 200 && isset($result['smsId'])) {
-                Log::info('SMS SMSMode envoyé avec succès', [
-                    'telephone' => $telephone,
-                    'smsId' => $result['smsId']
-                ]);
-                return true;
-            } else {
-                Log::error('Erreur API SMSMode', [
-                    'telephone' => $telephone,
-                    'http_code' => $httpCode,
-                    'response' => $response
-                ]);
-                return false;
+            // Pour SMSMode, une réponse réussie contient généralement un ID ou un code de succès
+            if ($httpCode === 200) {
+                $responseContent = trim($response);
+                // SMSMode retourne généralement un ID numérique ou un code de succès
+                if (is_numeric($responseContent) || strpos($responseContent, 'OK') !== false) {
+                    Log::info('SMS SMSMode envoyé avec succès', [
+                        'telephone' => $telephone,
+                        'response' => $responseContent
+                    ]);
+                    return true;
+                }
             }
+
+            Log::error('Erreur API SMSMode', [
+                'telephone' => $telephone,
+                'http_code' => $httpCode,
+                'response' => $response
+            ]);
+            return false;
 
         } catch (\Exception $e) {
             Log::error('Exception SMSMode SMS', [

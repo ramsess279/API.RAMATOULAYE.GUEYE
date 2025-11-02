@@ -55,6 +55,11 @@
                                         "description": "Mot de passe",
                                         "type": "string",
                                         "example": "admin123"
+                                    },
+                                    "code": {
+                                        "description": "Code d'authentification (optionnel pour nouveaux clients)",
+                                        "type": "string",
+                                        "example": "123456"
                                     }
                                 },
                                 "type": "object"
