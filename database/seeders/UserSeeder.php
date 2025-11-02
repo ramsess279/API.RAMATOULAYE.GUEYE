@@ -98,7 +98,7 @@ class UserSeeder extends Seeder
                 'telephone' => '+221751234572',
                 'dateNaissance' => '1995-07-30',
                 'adresse' => 'Ziguinchor, Sénégal',
-                'genre' => 'M',
+                'genre' => 'homme',
                 'cni' => '3210987654321'
             ]
         ];
@@ -119,8 +119,7 @@ class UserSeeder extends Seeder
             // Créer l'entrée client correspondante
             Client::create([
                 'user_id' => $user->id,
-                'cni' => $clientData['cni'],
-                'solde_total' => 0
+                'cni' => $clientData['cni']
             ]);
         }
 
